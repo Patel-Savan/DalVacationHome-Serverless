@@ -1,0 +1,34 @@
+imports:
+  - path: pubsub.py
+  - path: cloud_function.py
+  - path: firestore.py
+
+resources:
+  - name: customer-messages-topic
+    type: pubsub.py
+    properties:
+      topic: customer-messages
+      project: ${PROJECT_ID}
+
+  - name: property-agent-messages-topic
+    type: pubsub.py
+    properties:
+      topic: property-agent-messages
+      project: ${PROJECT_ID}
+
+  - name: process-customer-messages-function
+    type: cloud_function.py
+    properties:
+      runtime: python310
+      entryPoint: hello_pubsub
+      sourceArchiveUrl: ${SOURCE_ARCHIVE_URL}
+      eventTrigger:
+        eventType: google.pubsub.topic.publish
+        resource: projects/${PROJECT_ID}/topics/customer-messages
+      location: ${REGION}
+    metadata:
+      dependsOn:
+        - customer-messages-topic
+
+  - name: firestore-setup
+    type: firestore.py
