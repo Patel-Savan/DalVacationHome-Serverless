@@ -1,11 +1,12 @@
-import React from 'react'
+import React from "react";
+import ChatbotUI from "./Chatbot";
 
-const Home = () => {
+const Home: React.FC = () => {
   return (
-    <div>
-      Hello World!!
+    <div className="relative min-h-screen bg-gray-100">
+      <ChatbotUI />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
