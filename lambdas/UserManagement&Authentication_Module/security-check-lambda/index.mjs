@@ -21,6 +21,7 @@ export const handler = async (event) => {
     console.log(event)
     console.log(username)
     
+    //Get User info from database to compare with provided answers
     const data = await getUser(username)
     
     if(!data || !data.username){

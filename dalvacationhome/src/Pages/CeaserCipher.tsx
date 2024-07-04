@@ -59,11 +59,12 @@ const CeaserCipher = () => {
           saveLocalStorage("refreshToken", data.refreshToken);
           saveLocalStorage("username", data.username);
           saveLocalStorage("role", data.role);
+          toast.success("Login Successful")
           navigate("/Home");
         })
         .catch((error) => {
           console.log(error)
-          toast.error(error.response.data.message);
+          toast.error(error.response.data);
         });
     }
   };

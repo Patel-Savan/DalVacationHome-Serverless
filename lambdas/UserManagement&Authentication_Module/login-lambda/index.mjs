@@ -11,7 +11,11 @@ const tableName = "auth-info"
 const cognito = new CognitoIdentityProvider();
 const clientId = '56d2mgqmfdne9meq9amq5s5p2j';
 
-
+/**
+ * Entry Point for Login-lambda function
+ * @param {*} event Event body containing information about frontend request
+ * @returns message based on credentials provided by User
+ */
 export const handler = async (event) => {
 
   console.log(event)
@@ -32,6 +36,7 @@ export const handler = async (event) => {
 
       try {
 
+        // Checking Credentials with AWS Cognito
         const authResult = await cognito.initiateAuth(params);
     
         const { AccessToken, RefreshToken, IdToken } = authResult.AuthenticationResult;
@@ -47,9 +52,10 @@ export const handler = async (event) => {
             expirationTime : expirationTime
         }
 
+        // Deleting previous login tokens 
         await deleteIfExist(username);
     
-        // Store tokens and expiration time in DynamoDB
+        // Save Tokens in Database for future use 
         await saveLoginInfo(user); 
     
         const Response = {
@@ -78,6 +84,10 @@ export const handler = async (event) => {
       }
 }
 
+/**
+ * Function for saving user login info such as tokens in Database
+ * @param {*} user user object containing username, tokens
+ */
 async function saveLoginInfo(user){
     const params = {
         TableName : tableName,
@@ -90,6 +100,10 @@ async function saveLoginInfo(user){
       });
 }
 
+/**
+ * Function for deleting previous tokens if new Login request is made
+ * @param {*} username username for which tokens is to be stored
+ */
 async function deleteIfExist(username){
 
     const params = {

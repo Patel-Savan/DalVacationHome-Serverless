@@ -36,6 +36,8 @@ export const handler = async (event) => {
     }
 
     try{
+
+        //Save User info in the Database
         await saveUser(user);
 
         await cognito.adminUpdateUserAttributes({

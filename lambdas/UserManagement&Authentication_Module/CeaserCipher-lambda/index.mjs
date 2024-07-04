@@ -2,9 +2,13 @@ import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 
-// Initialize DynamoDB Document Client
 const dynamoDb = DynamoDBDocument.from(new DynamoDB({ region: "us-east-1" }));
 
+/**
+ * Entry Point for Ceaser-Cipher Check
+ * @param {*} event Event body containing information about request from frontend
+ * @returns json body based on user input
+ */
 export const handler = async (event) => {
   const body = JSON.parse(event.body);
 
@@ -26,7 +30,8 @@ export const handler = async (event) => {
   }
 
   try {
-    // Fetch encryption key from DynamoDB
+
+    // Getting Encryption key that was provided during Signup from Database 
     const dataItem = await getKeyFromDynamoDB(username);
 
     console.log(dataItem)
@@ -35,7 +40,7 @@ export const handler = async (event) => {
     }
 
     const key = dataItem.key;
-    // Verify the ciphertext
+    // Verifying Ciphertext provided by User 
     const isValid = verifyCipherText(normalText, cipherText, key);
 
     console.log(isValid)
@@ -43,8 +48,10 @@ export const handler = async (event) => {
       return buildResponse(401, "Incorrect Encryption");
     }
 
+    // Getting token from Database that was provided by AWS Cognito during first step
     const data = await getToken(username);
     
+    // Deleting tokens from database for security reaspns
     if(data){
       await deleteToken(username)
     }
@@ -72,6 +79,10 @@ export const handler = async (event) => {
   }
 };
 
+/**
+ * Function for Deleting tokens from database
+ * @param {*} username username for which tokens are to be deleted
+ */
 async function deleteToken(username){
   const params = {
     TableName : "auth-info",
@@ -83,6 +94,12 @@ async function deleteToken(username){
   await dynamoDb.delete(params)
   
 }
+
+/**
+ * Function for getting tokens from database
+ * @param {*} username username for which tokens are to be fetched
+ * @returns token for user
+ */
 async function getToken(username) {
   const params = {
     TableName: "auth-info",
@@ -101,6 +118,11 @@ async function getToken(username) {
   );
 }
 
+/**
+ * Function for getting encryption key from database for Checking cipher text
+ * @param {*} username username for which key is to be fetched
+ * @returns encryption key
+ */
 async function getKeyFromDynamoDB(username) {
   const params = {
     TableName: "app-users", // Replace with your table name
@@ -119,31 +141,46 @@ async function getKeyFromDynamoDB(username) {
   );
 }
 
+/**
+ * Function for Verifying Cipher text provided by user
+ * @param {*} normalText normal text 
+ * @param {*} cipherText cipher text provided by user
+ * @param {*} key key provided by user during signup
+ * @returns boolean based on cipher text
+ */
 function verifyCipherText(normalText, cipherText, key) {
+
+  // Getting correct cipher text for given normal text and key
   const encrypted = caesarCipherEncrypt(normalText, parseInt(key));
   return encrypted === cipherText;
 }
 
+/**
+ * Function for getting cipher text based on normal text and key
+ * @param {*} text text for which cipher text is to be generated
+ * @param {*} shift key for generating cipher text
+ * @returns cipher text
+ */
 function caesarCipherEncrypt(text, shift) {
   return text
     .split("")
     .map((char) => {
       if (char.match(/[a-z]/i)) {
         const code = char.charCodeAt(0);
-        // Uppercase letters
-        if (code >= 65 && code <= 90) {
-          return String.fromCharCode(((code - 65 + shift) % 26) + 65);
-        }
-        // Lowercase letters
-        if (code >= 97 && code <= 122) {
-          return String.fromCharCode(((code - 97 + shift) % 26) + 97);
-        }
+        
+        return String.fromCharCode(((code - 97 + shift) % 26) + 97);
       }
       return char;
     })
     .join("");
 }
 
+/**
+ * Function for creating response to be sent to frontend
+ * @param {*} statusCode status code of the response
+ * @param {*} message message supporting status code 
+ * @returns created response
+ */
 function buildResponse(statusCode, message) {
   const response = {
     statusCode: statusCode,
