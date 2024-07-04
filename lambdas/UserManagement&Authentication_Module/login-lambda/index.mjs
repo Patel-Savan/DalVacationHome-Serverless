@@ -9,7 +9,7 @@ const dynamoDb = DynamoDBDocument.from(new DynamoDB({
 const tableName = "auth-info"
 
 const cognito = new CognitoIdentityProvider();
-const clientId = '3k13ohqka2hf32cb5nk436evpp';
+const clientId = '56d2mgqmfdne9meq9amq5s5p2j';
 
 
 export const handler = async (event) => {
@@ -61,6 +61,7 @@ export const handler = async (event) => {
           body: JSON.stringify({ success: true })
         };
 
+        return Response;
       } catch (error) {
         
         console.error(error);
