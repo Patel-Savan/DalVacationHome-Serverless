@@ -21,8 +21,8 @@ export const handler = async (event) => {
     var answers = event.request.userAttributes;
 
     const favMovie = answers["custom:Movie"]
-    const favFood = answers["custom:Friend"]
-    const favFriend = answers["custom:Food"]
+    const favFriend = answers["custom:Friend"]
+    const favFood = answers["custom:Food"]
     const Role = answers["custom:Role"]
     const Key = answers["custom:Key"]
     
@@ -46,11 +46,13 @@ export const handler = async (event) => {
                 { Name: 'custom:Friend', Value: '' },
                 { Name: 'custom:Food', Value: '' },
                 { Name : 'custom:Role', Value : ''},
-                {Name : 'custom:Key', Value:0}
+                { Name : 'custom:Key', Value:'0' }
             ]
         })
 
     }catch(error){
+
+        console.log(error)
 
         event.response = {
             "error": "Error during post confirmation process",
@@ -61,28 +63,6 @@ export const handler = async (event) => {
 
     return event;
 }
-
-/**
- * This Function is used to Generate Response for sending to the client
- * @param {*} statusCode Status Code of Required Response 
- * @param {*} message Message of Required Response
- * @returns Generated Response body
- */
-
-function buildResponse(statusCode,message){
-
-    const response = {
-        statusCode:statusCode,
-        headers:{
-            'Access-Control-Allow-Origin':'*',
-            'Content-type':'application/json'
-        },
-        body:JSON.stringify(message)
-    }
-
-    return response;
-}
-
 
 /**
  * This Function is used to save the user info in the DynamoDb table
