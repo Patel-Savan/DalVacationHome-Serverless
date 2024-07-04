@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  CloudFormation template to create SNS topic, SQS queue, and Lambda functions for notifications in DALVacationHome project.
+  CloudFormation template to create SNS topic, SQS queue, API Gateway, and Lambda functions for notifications in DALVacationHome project.
 
 Parameters:
   S3BucketName:
@@ -43,20 +43,24 @@ Resources:
     Properties: 
       FunctionName: 'BookingRequestPublisherFunction'
       Handler: 'BookingRequestPublisher.lambda_handler'
-      Role: 'arn:aws:iam::138012733653:role/LabRole'  # Reference to the existing LabRole
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
       Code: 
         S3Bucket:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeyBookingRequestPublisher
       Runtime: 'python3.8'
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: 
+            Ref: NotificationTopic
 
   BookingApprovalFunction:
     Type: 'AWS::Lambda::Function'
     Properties: 
       FunctionName: 'BookingApprovalFunction'
-      Handler: 'BookingApprovalLambda.lambda_handler'
-      Role: 'arn:aws:iam::138012733653:role/LabRole'  # Reference to the existing LabRole
+      Handler: 'BookingApproval.lambda_handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
       Code: 
         S3Bucket:
           Ref: S3BucketName
@@ -72,14 +76,18 @@ Resources:
     Type: 'AWS::Lambda::Function'
     Properties: 
       FunctionName: 'LoginRegisterFunction'
-      Handler: 'LoginRegisterLambda.lambda_handler'
-      Role: 'arn:aws:iam::138012733653:role/LabRole'  # Reference to the existing LabRole
+      Handler: 'LoginRegister.lambda_handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
       Code: 
         S3Bucket:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeyLoginRegister
       Runtime: 'python3.8'
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: 
+            Ref: NotificationTopic
 
   BookingApprovalEventSourceMapping:
     Type: 'AWS::Lambda::EventSourceMapping'
@@ -92,7 +100,100 @@ Resources:
       FunctionName:
         Ref: BookingApprovalFunction
 
+  # API Gateway
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: 'DALVacationHomeAPI'
+
+  ApiGatewayResourceBookingRequest:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'booking-request'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayResourceLoginRegister:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'login-register'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayMethodBookingRequest:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceBookingRequest
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BookingRequestPublisherFunction.Arn}/invocations
+
+  ApiGatewayMethodLoginRegister:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceLoginRegister
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginRegisterFunction.Arn}/invocations
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      StageName: 'prod'
+    DependsOn:
+      - ApiGatewayMethodBookingRequest
+      - ApiGatewayMethodLoginRegister
+
+  # Lambda Permission for API Gateway
+  LambdaPermissionBookingRequestPublisher:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: BookingRequestPublisherFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/booking-request
+
+  LambdaPermissionLoginRegister:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: LoginRegisterFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/login-register
+
 Outputs:
+  ApiGatewayEndpoint:
+    Description: 'API Gateway endpoint URL'
+    Value:
+      Fn::Sub: https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod
   NotificationTopicArn:
     Description: 'SNS Topic ARN for Notifications'
     Value: 
@@ -101,7 +202,15 @@ Outputs:
     Description: 'SQS Queue URL for Booking Requests'
     Value: 
       Ref: BookingRequestQueue
-  LambdaFunctionArn:
+  LambdaFunctionArnBookingApproval:
     Description: 'Lambda Function ARN for Booking Approval'
     Value: 
       Ref: BookingApprovalFunction
+  LambdaFunctionArnBookingRequestPublisher:
+    Description: 'Lambda Function ARN for Booking Request Publisher'
+    Value: 
+      Ref: BookingRequestPublisherFunction
+  LambdaFunctionArnLoginRegister:
+    Description: 'Lambda Function ARN for Login/Register'
+    Value: 
+      Ref: LoginRegisterFunction

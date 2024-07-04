@@ -1,8 +1,9 @@
 import json
 import boto3
+import os
 
 sns_client = boto3.client('sns')
-topic_arn = 'arn:aws:sns:your-region:your-account-id:NotificationTopic'  # Replace with your SNS topic ARN
+topic_arn = os.environ['SNS_TOPIC_ARN']
 
 def lambda_handler(event, context):
     try:
@@ -22,7 +23,7 @@ def lambda_handler(event, context):
         
         response = {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Booking request sent successfully'})
+            'body': json.dumps({'message': 'Booking request sent for approval successfully'})
         }
     except Exception as e:
         response = {

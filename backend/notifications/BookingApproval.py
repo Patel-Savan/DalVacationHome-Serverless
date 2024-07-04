@@ -1,11 +1,13 @@
 import json
 import boto3
+import os
 
 sns_client = boto3.client('sns')
+topic_arn = os.environ['SNS_TOPIC_ARN']
 
 def send_notification(email, subject, message):
     sns_client.publish(
-        TopicArn='arn:aws:sns:your-region:your-account-id:NotificationTopic',  # Replace with your SNS topic ARN
+        TopicArn=topic_arn,
         Message=message,
         Subject=subject,
         MessageAttributes={
@@ -22,8 +24,10 @@ def lambda_handler(event, context):
         user_email = message['user_email']
         booking_details = message['booking_details']
         
+        # Here we will write the booking request logic
         # Process the booking request
-        booking_approved = True  # This should be the result of your booking logic
+        # For now hardcoding the booking approved flag
+        booking_approved = True  
         
         if booking_approved:
             subject = 'Booking Confirmation'
