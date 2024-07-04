@@ -7,4 +7,4 @@ set +a
 gcloud deployment-manager deployments delete $DEPLOYMENT_NAME -q
 
 # Delete the source code bucket
-gsutil rm -r gs://$BUCKET_NAME/
+gsutil rm -r gs://$GCS_BUCKET_NAME/
