@@ -7,9 +7,3 @@ resources:
     properties:
       topic: customer-messages
       project: ${GCLOUD_PROJECT_ID}
-
-  - name: property-agent-messages-topic
-    type: pubsub.py
-    properties:
-      topic: property-agent-messages
-      project: ${GCLOUD_PROJECT_ID}
