@@ -29,6 +29,19 @@ def check_and_subscribe_user(email):
     if email not in subscribed_emails:
         subscribe_user(email)
 
+def send_notification(email,message,subject):
+    sns_client.publish(
+        TopicArn=topic_arn,
+        Message=message,
+        Subject=subject,
+        MessageAttributes={
+            'email': {
+                'DataType': 'String',
+                'StringValue': email
+            }
+        }
+    )
+
 def lambda_handler(event, context):
     try:
         print("Received event:", json.dumps(event))
@@ -65,18 +78,8 @@ def lambda_handler(event, context):
         
         # Check and subscribe the user if not already subscribed
         check_and_subscribe_user(email)
-        
-        sns_client.publish(
-            TopicArn=topic_arn,
-            Message=message,
-            Subject=subject,
-            MessageAttributes={
-                'email': {
-                    'DataType': 'String',
-                    'StringValue': email
-                }
-            }
-        )
+         #publishing notification to sns topic
+        send_notification(email,message,subject)
         
         response = {
             'statusCode': 200,
