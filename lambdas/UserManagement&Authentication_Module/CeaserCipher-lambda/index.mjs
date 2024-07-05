@@ -68,7 +68,8 @@ export const handler = async (event) => {
             "Content-type": "application/json"
         },
         body:JSON.stringify({
-            username:username,
+            username:dataItem.username,
+            useremail : dataItem.useremail,
             role:dataItem.role,
             accessToken:data.accessToken,
             idToken:data.idToken,
@@ -130,7 +131,7 @@ async function getToken(username) {
  */
 async function getKeyFromDynamoDB(username) {
   const params = {
-    TableName: "serverless-project-users", 
+    TableName: "serverless-project-users",
     Key: {
         username:username
     }
