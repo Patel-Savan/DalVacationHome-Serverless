@@ -6,7 +6,7 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   ISignUpResult,
-  ICognitoUserAttributeData
+  ICognitoUserAttributeData,
 } from "amazon-cognito-identity-js";
 
 const Signup = () => {
@@ -23,7 +23,8 @@ const Signup = () => {
   const navigate = useNavigate();
 
   const [passwordError, setPasswordError] = useState<boolean>(false);
-  const [confirmPasswordError, setConfirmPasswordError] = useState<boolean>(false);
+  const [confirmPasswordError, setConfirmPasswordError] =
+    useState<boolean>(false);
   const [keyError, setKeyError] = useState<boolean>(false);
 
   const signup = () => {
@@ -37,10 +38,10 @@ const Signup = () => {
       { Name: "custom:Friend", Value: friend },
       { Name: "custom:Food", Value: food },
       { Name: "custom:Role", Value: role },
-      { Name: "custom:Key", Value: key.toString() }
+      { Name: "custom:Key", Value: key.toString() },
     ];
 
-    attributes.forEach(attr => {
+    attributes.forEach((attr) => {
       attributeList.push(new CognitoUserAttribute(attr));
     });
 
@@ -52,19 +53,20 @@ const Signup = () => {
       (err: Error | undefined, data?: ISignUpResult) => {
         if (data) {
           console.log(data);
-      
+
           navigate("/EmailVerification", {
             state: {
-              username: username
-            }
+              username: username,
+            },
           });
         }
-      
+
         if (err) {
-          console.log(err)
+          console.log(err);
           toast.error("User with same email or username exist");
         }
-      })   
+      }
+    );
   };
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -91,8 +93,9 @@ const Signup = () => {
 
     event.preventDefault();
 
-    const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-    if (key <= 0 || key>26) {
+    const passwordRegex =
+      /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    if (key <= 0 || key > 26) {
       setKeyError(true);
     } else if (password !== confirmPassword) {
       setConfirmPasswordError(true);
@@ -163,7 +166,7 @@ const Signup = () => {
                   Select a role
                 </option>
                 <option value="property-agent">Property Agent</option>
-                <option value="guest">Guest</option>
+                <option value="customer">Customer</option>
               </select>
             </div>
 
