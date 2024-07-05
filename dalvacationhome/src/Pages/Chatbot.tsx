@@ -1,38 +1,36 @@
 import React, { useState } from "react";
-import { styled } from "@mui/system";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import IconButton from "@mui/material/IconButton";
+import { styled, Tooltip, IconButton, Button, TextField } from "@mui/material";
+import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import AWS from "aws-sdk";
 
-const ChatButton = styled(Button)({
+const ChatButton = styled(Button)(({ theme }) => ({
   position: "fixed",
-  bottom: 16,
-  right: 16,
-  width: 64,
-  height: 64,
+  bottom: theme.spacing(2),
+  right: theme.spacing(2),
+  width: theme.spacing(8),
+  height: theme.spacing(8),
   borderRadius: "50%",
-  backgroundColor: "#3f51b5",
-  color: "white",
+  backgroundColor: theme.palette.secondary.main,
+  color: theme.palette.secondary.contrastText,
   "&:hover": {
-    backgroundColor: "#303f9f",
+    backgroundColor: theme.palette.secondary.dark,
   },
-});
+}));
 
-const ChatBox = styled("div")({
+const ChatBox = styled("div")(({ theme }) => ({
   position: "fixed",
-  bottom: 16,
-  right: 16,
+  bottom: theme.spacing(2),
+  right: theme.spacing(2),
   width: 300,
   height: 400,
-  backgroundColor: "white",
-  boxShadow: "0px 3px 6px rgba(0,0,0,0.16)",
-  borderRadius: 8,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[5],
+  borderRadius: theme.shape.borderRadius,
   display: "flex",
   flexDirection: "column",
-  padding: 16,
-});
+  padding: theme.spacing(2),
+}));
 
 const ChatHeader = styled("div")({
   display: "flex",
@@ -198,7 +196,11 @@ const ChatbotUI: React.FC = () => {
           </ChatFooter>
         </ChatBox>
       ) : (
-        <ChatButton onClick={toggleChat}>Chat</ChatButton>
+        <Tooltip title="Chat with us!" placement="left">
+          <ChatButton onClick={toggleChat}>
+            <ChatIcon />
+          </ChatButton>
+        </Tooltip>
       )}
     </div>
   );
