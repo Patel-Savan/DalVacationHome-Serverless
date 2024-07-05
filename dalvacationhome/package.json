@@ -14,7 +14,12 @@
     "@types/node": "^16.18.98",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+<<<<<<< HEAD
     "aws-sdk": "^2.1649.0",
+=======
+    "amazon-cognito-identity-js": "^6.3.12",
+    "axios": "^1.7.2",
+>>>>>>> 1893e735d9a65fd94f7be77118495ea2c55f82b8
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1",

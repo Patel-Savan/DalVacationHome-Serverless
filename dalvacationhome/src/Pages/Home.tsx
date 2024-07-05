@@ -4,14 +4,15 @@ import Navbar from "../Components/Navbar";
 import ChatbotUI from "./Chatbot";
 // Make sure the import is correct
 
+
 interface Room {
   id: number;
   type: string;
   price: number;
   available: boolean;
   imageUrl: string;
-}
 
+}
 const rooms: Room[] = [
   {
     id: 1,

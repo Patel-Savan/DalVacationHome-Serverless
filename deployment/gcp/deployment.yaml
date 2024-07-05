@@ -1,0 +1,9 @@
+imports:
+  - path: pubsub.py
+
+resources:
+  - name: customer-messages-topic
+    type: pubsub.py
+    properties:
+      topic: customer-messages
+      project: ${GCLOUD_PROJECT_ID}
