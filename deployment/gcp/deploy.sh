@@ -5,22 +5,22 @@ set +a
 
 # Authenticating with Google Cloud (THIS IS OPTIONAL, WILL RUN FIRST TIME ONLY)
 # gcloud auth login
-# gcloud config set project $PROJECT_ID
+# gcloud config set project $GCLOUD_PROJECT_ID
 
-# Creating a storage bucket
-gsutil mb -l $REGION gs://$BUCKET_NAME/
+# Creating a storage bucket for storing pub/sub code
+gsutil mb -l $DEPLOYMENT_REGION gs://$GCS_BUCKET_NAME/
 
-# Zipping the source code
-zip $ZIP_FILE ../../backend/message-passing/main.py ../../backend/message-passing/requirements.txt
+# Zipping the pub/sub source code
+zip $SOURCE_CODE_ZIP ../../backend/message-passing/main.py ../../backend/message-passing/requirements.txt
 
-# Uploading the zip file to the bucket
-gsutil cp $ZIP_FILE gs://$BUCKET_NAME/
+# Uploading the pub/sub source code zip file to the bucket
+gsutil cp $SOURCE_CODE_ZIP gs://$GCS_BUCKET_NAME/
 
-# Removing the zip file
-rm $ZIP_FILE
+# Removing the pub/sub source code zip file
+rm $SOURCE_CODE_ZIP
 
-# Setting the zip file bucket URL
-SOURCE_ARCHIVE_URL="gs://$BUCKET_NAME/$ZIP_FILE"
+# Setting the pub/sub source code zip file bucket URL
+SOURCE_ARCHIVE_URL="gs://$GCS_BUCKET_NAME/$SOURCE_CODE_ZIP"
 
 echo $SOURCE_ARCHIVE_URL
 
@@ -29,6 +29,6 @@ echo $SOURCE_ARCHIVE_URL
 # envsubst < deployment.yaml > deployment_substituted.yaml
 
 # Deploy the infrastructure using Deployment Manager
-gcloud deployment-manager deployments create $DEPLOYMENT_NAME --config deployment_substituted.yaml
+gcloud deployment-manager deployments create $DEPLOYMENT_NAME --config deployment.yaml
 
 echo "Deployment completed."
