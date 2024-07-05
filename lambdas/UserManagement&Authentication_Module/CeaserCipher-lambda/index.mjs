@@ -32,11 +32,16 @@ export const handler = async (event) => {
   try {
 
     // Getting Encryption key that was provided during Signup from Database 
-    const dataItem = await getKeyFromDynamoDB(username);
+    var dataItem = await getKeyFromDynamoDB(username);
 
     console.log(dataItem)
+
     if (!dataItem || !dataItem.username) {
-      return buildResponse(403, "Account does not exist for this email");
+
+      dataItem = await getKeyFromDynamoDBUsingEmail(username)
+      
+      if(!dataItem || !dataItem.username)
+        return buildResponse(403, "Account does not exist for this email");
     }
 
     const key = dataItem.key;
@@ -119,13 +124,13 @@ async function getToken(username) {
 }
 
 /**
- * Function for getting encryption key from database for Checking cipher text
+ * Function for getting encryption key from database using username for Checking cipher text
  * @param {*} username username for which key is to be fetched
  * @returns encryption key
  */
 async function getKeyFromDynamoDB(username) {
   const params = {
-    TableName: "app-users", // Replace with your table name
+    TableName: "serverless-project-users", 
     Key: {
         username:username
     }
@@ -140,6 +145,33 @@ async function getKeyFromDynamoDB(username) {
     }
   );
 }
+
+/**
+ * Function for getting encryption key from database using useremail for Checking cipher text
+ * @param {*} email email for which key is to be fetched
+ * @returns encryption key
+ */
+const getKeyFromDynamoDBUsingEmail = async (email) => {
+  const params = {
+    TableName: "serverless-project-users", 
+    IndexName: 'useremail', 
+    KeyConditionExpression: 'useremail = :email',
+    ExpressionAttributeValues: {
+      ':email': email,
+    },
+  };
+
+  try {
+    const result = await dynamoDb.query(params);
+    if (result.Items.length > 0) {
+      console.log('User retrieved successfully by email:', result.Items[0]);
+      return result.Items[0];
+    }
+  } catch (error) {
+    console.error('Error retrieving user by email:', error);
+  }
+  return null;
+};
 
 /**
  * Function for Verifying Cipher text provided by user

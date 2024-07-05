@@ -4,7 +4,7 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 const dynamoDb = DynamoDBDocument.from(new DynamoDB({
     region:'us-east-1'
 }))
-const tableName = "app-users"
+const tableName = "serverless-project-users"
 /**
  * This Function is the Entry point for Login Lambda Function
  * @param {*} event Event body containing required details from frontend
@@ -21,11 +21,14 @@ export const handler = async (event) => {
     console.log(event)
     console.log(username)
     
-    //Get User info from database to compare with provided answers
-    const data = await getUser(username)
-    
+    var data;
+    data = await getUserByUsername(username)
+
     if(!data || !data.username){
-        return buildResponse(403,"Account does not exist for this email")
+
+        data = await getUserByEmail(username)
+        if(!data || !data.username)
+            return buildResponse(403,"Account does not exist for this email")
     }
 
     const storedMovie = data.favMovie;
@@ -45,8 +48,7 @@ export const handler = async (event) => {
  * @param {*} useremail User Email using which user details is to be onbtained 
  * @returns Response Object based on whether user with given email is present or not
  */
-
-async function getUser(username){
+async function getUserByUsername(username){
     const params = {
         TableName : tableName,
         Key : {
@@ -63,12 +65,39 @@ async function getUser(username){
 }
 
 /**
+ * Function for getting user info using useremail from database
+ * @param {*} email email for which info is to be obtained
+ * @returns user information
+ */
+async function getUserByEmail(email){
+    const params = {
+      TableName: tableName, 
+      IndexName: 'useremail', 
+      KeyConditionExpression: 'useremail = :email',
+      ExpressionAttributeValues: {
+        ':email': email,
+      },
+    };
+  
+    try {
+      const result = await dynamoDb.query(params);
+      if (result.Items.length > 0) {
+        console.log('User retrieved successfully by email:', result.Items[0]);
+        return result.Items[0];
+      }
+    } catch (error) {
+      console.error('Error retrieving user by email:', error);
+    }
+    return null;
+  };
+  
+  
+/**
  * This Function is used to Generate Response for sending to the client
  * @param {*} statusCode Status Code of Required Response 
  * @param {*} message Message of Required Response
  * @returns Generated Response body
  */
-
 function buildResponse(statusCode,message){
 
     const Response = {
