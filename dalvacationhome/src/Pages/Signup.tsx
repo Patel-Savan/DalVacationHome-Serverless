@@ -92,7 +92,7 @@ const Signup = () => {
     event.preventDefault();
 
     const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-    if (key <= 0) {
+    if (key <= 0 || key>26) {
       setKeyError(true);
     } else if (password !== confirmPassword) {
       setConfirmPasswordError(true);
@@ -225,7 +225,7 @@ const Signup = () => {
             <div className="mb-4 px-3">
               {keyError && (
                 <p className="text-red-600">
-                  * Key cannot be 0 or less
+                  * Key should be greater than 0 and less than 26
                 </p>
               )}
               <label htmlFor="key" className="block text-gray-900 text-sm mb-2">

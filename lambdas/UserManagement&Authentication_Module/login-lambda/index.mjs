@@ -12,9 +12,9 @@ const cognito = new CognitoIdentityProvider();
 const clientId = '56d2mgqmfdne9meq9amq5s5p2j';
 
 /**
- * Entry Point for Login-lambda function
- * @param {*} event Event body containing information about frontend request
- * @returns message based on credentials provided by User
+ * Entry Point for Login 
+ * @param {*} event Event body containing information about request from frontend
+ * @returns json body based on user input
  */
 export const handler = async (event) => {
 
@@ -52,10 +52,10 @@ export const handler = async (event) => {
             expirationTime : expirationTime
         }
 
-        // Deleting previous login tokens 
+        // Deleting previous login tokens
         await deleteIfExist(username);
     
-        // Save Tokens in Database for future use 
+        // Store tokens and expiration time in DynamoDB
         await saveLoginInfo(user); 
     
         const Response = {
@@ -85,8 +85,8 @@ export const handler = async (event) => {
 }
 
 /**
- * Function for saving user login info such as tokens in Database
- * @param {*} user user object containing username, tokens
+ * Save Login info such as username, tokens for future use 
+ * @param {*} user user info to be saved in database 
  */
 async function saveLoginInfo(user){
     const params = {
@@ -101,8 +101,8 @@ async function saveLoginInfo(user){
 }
 
 /**
- * Function for deleting previous tokens if new Login request is made
- * @param {*} username username for which tokens is to be stored
+ * Function for deleting previous login info
+ * @param {*} username username for which info is to be deleted
  */
 async function deleteIfExist(username){
 

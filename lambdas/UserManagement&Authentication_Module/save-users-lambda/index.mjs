@@ -7,7 +7,7 @@ const cognito = new CognitoIdentityProvider({
 })
 
 const dynamoDB = DynamoDBDocument.from(new DynamoDB({ region: 'us-east-1' }));
-const tableName ="app-users"
+const tableName ="serverless-project-users"
 
 /**
  * Entry Point for Register User Lambda Function
@@ -20,6 +20,7 @@ export const handler = async (event) => {
     var userPoolId = event.userPoolId;
     var answers = event.request.userAttributes;
 
+    const email = answers["email"]
     const favMovie = answers["custom:Movie"]
     const favFriend = answers["custom:Friend"]
     const favFood = answers["custom:Food"]
@@ -28,12 +29,15 @@ export const handler = async (event) => {
     
     const user = {
         username : name,
+        useremail : email,
         favMovie : favMovie,
         favFood : favFood,
         favFriend : favFriend,
         role : Role,
         key : Key
     }
+
+    console.log(user)
 
     try{
 
@@ -80,6 +84,7 @@ async function saveUser(user){
         await dynamoDB.put(params)
         return true;
     }catch(error){
+        console.log(error)
         return false;
     }
 }

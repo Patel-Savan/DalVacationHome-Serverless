@@ -58,6 +58,7 @@ const CeaserCipher = () => {
           saveLocalStorage("accessToken", data.accessToken);
           saveLocalStorage("refreshToken", data.refreshToken);
           saveLocalStorage("username", data.username);
+          saveLocalStorage("useremail",data.useremail);
           saveLocalStorage("role", data.role);
           toast.success("Login Successful")
           navigate("/Home");
