@@ -6,11 +6,17 @@ import Signup from "../Pages/Signup";
 import EmailVerification from "../Pages/EmailVerification";
 import Login from "../Pages/Login";
 import SecurityCheck from "../Pages/SecurityCheck";
+
 import CeaserCipher from "../Pages/CeaserCipher";
+import Chatbot from "../Pages/Chatbot";
 
 const AppRoutes = () => {
   return (
     <Routes>
+
+      <Route path="/" Component={Home} />
+      <Route path="/chat" Component={Chatbot} />
+
       <Route path="/" element={<LandingPage />} />
       <Route path="/Signup" element={<Signup />} />
       <Route path="/EmailVerification" element={<EmailVerification />} />
@@ -18,6 +24,7 @@ const AppRoutes = () => {
       <Route path="/SecurityCheck" element={<SecurityCheck />} />
       <Route path="/CeaserCipher" element={<CeaserCipher />} />
       <Route path="/Home" element={<Home />} />
+
     </Routes>
   );
 };

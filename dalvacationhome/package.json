@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -10,8 +14,12 @@
     "@types/node": "^16.18.98",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+<<<<<<< HEAD
+    "aws-sdk": "^2.1649.0",
+=======
     "amazon-cognito-identity-js": "^6.3.12",
     "axios": "^1.7.2",
+>>>>>>> 1893e735d9a65fd94f7be77118495ea2c55f82b8
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1",
