@@ -58,13 +58,30 @@ const CeaserCipher = () => {
           saveLocalStorage("accessToken", data.accessToken);
           saveLocalStorage("refreshToken", data.refreshToken);
           saveLocalStorage("username", data.username);
-          saveLocalStorage("useremail",data.useremail);
+          saveLocalStorage("useremail", data.useremail);
           saveLocalStorage("role", data.role);
-          toast.success("Login Successful")
-          navigate("/Home");
+          toast.success("Login Successful");
+          
+          // Call the login-register API
+          axios
+            .post(
+              "https://teyujxwn2a.execute-api.us-east-1.amazonaws.com/prod/login-register",
+              {
+                email: data.useremail,
+                operation: "login"
+              }
+            )
+            .then((response) => {
+              console.log("Login/Register API Response:", response.data);
+              navigate("/Home");
+            })
+            .catch((error) => {
+              console.error("Error calling login-register API:", error);
+              toast.error("Error calling login-register API");
+            });
         })
         .catch((error) => {
-          console.log(error)
+          console.log(error);
           toast.error(error.response.data);
         });
     }
