@@ -11,7 +11,7 @@ sns_client = boto3.client('sns')
 topic_arn = os.environ['BOOKING_REQUEST_TOPIC_ARN']
 
 def lambda_handler(event, context):
-    logger.info('topic arn is as follows --- %s ',topic_arn)
+    logger.info('Topic ARN: %s', topic_arn)
     logger.info("Received event: %s", json.dumps(event))
     
     try:
@@ -19,19 +19,22 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         logger.info("Parsed body: %s", body)
 
-        email = body['user_email']
+        user_email = body['user_email']
         booking_details = body['booking_details']
-        
+        booking_approved= body['booking_approved']
+         
         # Log the email and booking details
-        logger.info("User email: %s", email)
+        logger.info("User email: %s", user_email)
         logger.info("Booking details: %s", booking_details)
+        logger.info("Booking booking_approved: %s", booking_approved)
         
         # Publish booking request to SNS topic
         sns_client.publish(
             TopicArn=topic_arn,
             Message=json.dumps({
-                'user_email': email,
-                'booking_details': booking_details
+                'user_email': user_email,
+                'booking_details': booking_details,
+                'booking_approved': booking_approved
             }),
             Subject='Booking Request'
         )
