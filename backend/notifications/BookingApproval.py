@@ -7,56 +7,51 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-sqs_client = boto3.client('sqs')
 sns_client = boto3.client('sns')
-queue_url = os.environ['BOOKING_QUEUE_URL']
-notification_topic_arn = os.environ['NOTIFICATION_TOPIC_ARN']
-
-def send_notification(email, subject, message):
-    sns_client.publish(
-        TopicArn=notification_topic_arn,
-        Message=message,
-        Subject=subject,
-        MessageAttributes={
-            'email': {
-                'DataType': 'String',
-                'StringValue': email
-            }
-        }
-    )
-    logger.info(f"Notification sent to {email} with subject: {subject}")
+topic_arn = os.environ['BOOKING_REQUEST_TOPIC_ARN']
 
 def lambda_handler(event, context):
+    logger.info('topic arn is as follows --- %s ', topic_arn)
     logger.info("Received event: %s", json.dumps(event))
+    
+    try:
+        # Parse the request body
+        body = json.loads(event['body'])
+        logger.info("Parsed body: %s", body)
 
-    for record in event['Records']:
-        message_body = record['body']
-        logger.info("Received message body: %s", message_body)
-
-        try:
-            message = json.loads(message_body)
-
-            # SNS message has a 'Message' field which contains the actual message
-            actual_message = json.loads(message['Message'])
-            user_email = actual_message['user_email']
-            booking_details = actual_message['booking_details']
-
-            # Here you would add the booking approval logic
-            booking_approved = True  # or False based on your logic
-            logger.info("Booking approved: %s", booking_approved)
-
-            if booking_approved:
-                subject = 'Booking Confirmation'
-                body_message = f"Booking confirmed for {user_email}. Details: {booking_details}"
-            else:
-                subject = 'Booking Failure'
-                body_message = f"Booking failed for {user_email}. Details: {booking_details}"
-
-            send_notification(user_email, subject, body_message)
-        except Exception as e:
-            logger.error(f"Error processing message: {e}")
-
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Processed booking request')
-    }
+        email = body['user_email']
+        booking_details = body['booking_details']
+        booking_approved = body['booking_approved']
+        
+        # Log the email, booking details, and booking approved flag
+        logger.info("User email: %s", email)
+        logger.info("Booking details: %s", booking_details)
+        logger.info("Booking approved: %s", booking_approved)
+        
+        # Publish booking request to SNS topic
+        sns_client.publish(
+            TopicArn=topic_arn,
+            Message=json.dumps({
+                'user_email': email,
+                'booking_details': booking_details,
+                'booking_approved': booking_approved
+            }),
+            Subject='Booking Request'
+        )
+        
+        logger.info("Published message to SNS topic: %s", topic_arn)
+        
+        response = {
+            'statusCode': 200,
+            'body': json.dumps({'message': 'Booking request sent for approval successfully'})
+        }
+        logger.info("Response: %s", response)
+        
+    except Exception as e:
+        logger.error("Error: %s", str(e))
+        response = {
+            'statusCode': 500,
+            'body': json.dumps({'error': str(e)})
+        }
+    
+    return response
