@@ -32,6 +32,28 @@ Resources:
     Properties:
       QueueName: 'BookingRequestQueue'
 
+  BookingRequestQueuePolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      Queues:
+        - Ref: BookingRequestQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowSNSPublish
+            Effect: Allow
+            Principal:
+              Service: 'sns.amazonaws.com'
+            Action: 'sqs:SendMessage'
+            Resource:
+              Fn::GetAtt:
+                - BookingRequestQueue
+                - Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn:
+                  Ref: BookingRequestTopic
+
   BookingRequestQueueSubscription:
     Type: 'AWS::SNS::Subscription'
     Properties:

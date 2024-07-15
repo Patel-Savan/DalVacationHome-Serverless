@@ -1,11 +1,16 @@
 import json
 import boto3
 import os
+import logging
 
 sqs_client = boto3.client('sqs')
 sns_client = boto3.client('sns')
 queue_url = os.environ['BOOKING_QUEUE_URL']
 notification_topic_arn = os.environ['NOTIFICATION_TOPIC_ARN']
+
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def send_notification(email, subject, message):
     sns_client.publish(
@@ -23,6 +28,7 @@ def send_notification(email, subject, message):
 def lambda_handler(event, context):
     for record in event['Records']:
         message_body = record['body']
+        logger.info("Received event: %s", json.dumps(event))
         print(f"Received message: {message_body}")
 
         try:
@@ -32,7 +38,7 @@ def lambda_handler(event, context):
 
             # Here you would add the booking approval logic
             booking_approved = True  # or False based on your logic
-
+            logger.info("booking_approved: %s", booking_approved)
             if booking_approved:
                 subject = 'Booking Confirmation'
                 body_message = f"Booking confirmed for {user_email}. Details: {booking_details}"
