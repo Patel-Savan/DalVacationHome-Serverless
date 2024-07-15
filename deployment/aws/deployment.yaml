@@ -40,18 +40,17 @@ Resources:
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Sid: AllowSNSPublish
-            Effect: Allow
+          - Effect: Allow
             Principal:
               Service: 'sns.amazonaws.com'
             Action: 'sqs:SendMessage'
-            Resource:
+            Resource: 
               Fn::GetAtt:
                 - BookingRequestQueue
                 - Arn
             Condition:
               ArnEquals:
-                aws:SourceArn:
+                aws:SourceArn: 
                   Ref: BookingRequestTopic
 
   BookingRequestQueueSubscription:
