@@ -143,7 +143,7 @@ Resources:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeyCeaserCipher
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs20.x'
 
   LoginFunction:
     Type: 'AWS::Lambda::Function'
@@ -156,7 +156,7 @@ Resources:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeyLogin
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs20.x'
 
   SaveUsersFunction:
     Type: 'AWS::Lambda::Function'
@@ -169,7 +169,7 @@ Resources:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeySaveUsers
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs20.x'
 
   SecurityCheckFunction:
     Type: 'AWS::Lambda::Function'
@@ -182,7 +182,7 @@ Resources:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeySecurityCheck
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs20.x'
   
   StayDurationInfoFunction:
     Type: 'AWS::Lambda::Function'
@@ -195,7 +195,7 @@ Resources:
           Ref: S3BucketName
         S3Key:
           Ref: S3KeyStayDurationInfo
-      Runtime: 'nodejs14.x'
+      Runtime: 'nodejs20.x'
 
   BookingApprovalEventSourceMapping:
     Type: 'AWS::Lambda::EventSourceMapping'

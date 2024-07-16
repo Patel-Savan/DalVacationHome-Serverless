@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import config from "../config";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ const Login = () => {
 
     axios
       .post(
-        " https://wt7ruma5q5.execute-api.us-east-1.amazonaws.com/login",
+        `${config.apiGateway.BASE_URL}/login`,
         formData,
         {
           headers: {
