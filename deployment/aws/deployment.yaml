@@ -235,6 +235,61 @@ Resources:
       PathPart: 'login-register'
       RestApiId:
         Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceLogin:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'login'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayResourceSaveUsers:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'save-users'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayResourceSecurityCheck:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'security-check'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceCeaserCipher:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'ceaser-cipher'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceStayDurationInfo:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'stayDuration-info'
+      RestApiId:
+        Ref: ApiGatewayRestApi
 
   ApiGatewayMethodBookingRequest:
     Type: 'AWS::ApiGateway::Method'
@@ -265,6 +320,263 @@ Resources:
         Type: 'AWS_PROXY'
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginRegisterFunction.Arn}/invocations
+
+  ApiGatewayMethodLogin:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceLogin
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginFunction.Arn}/invocations
+
+  ApiGatewayMethodSaveUsers:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceSaveUsers
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SaveUsersFunction.Arn}/invocations
+
+  ApiGatewayMethodSecurityCheck:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceSecurityCheck
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SecurityCheckFunction.Arn}/invocations
+
+  ApiGatewayMethodCeaserCipher:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceCeaserCipher
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CeaserCipherFunction.Arn}/invocations
+
+  ApiGatewayMethodStayDurationInfo:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceStayDurationInfo
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StayDurationInfoFunction.Arn}/invocations
+
+  ApiGatewayMethodStayDurationInfoOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceStayDurationInfo
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodSecurityCheckOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceSecurityCheck
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+ 
+  ApiGatewayMethodSaveUsersOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceSaveUsers
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodLoginOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceLogin
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+  
+  ApiGatewayMethodCeaserCipherOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceCeaserCipher
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodLoginRegisterOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceLoginRegister
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+  
+  ApiGatewayMethodBookingRequestOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceBookingRequest
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGateway::Deployment'
