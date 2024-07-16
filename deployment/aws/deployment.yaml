@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  CloudFormation template to create SNS topic, SQS queue, API Gateway, and Lambda functions for notifications in DALVacationHome project.
+  CloudFormation template to create SNS topic, SQS queue, API Gateway, and Lambda functions for notifications in DALVacationHome project, along with additional Lambda functions for other modules.
 
 Parameters:
   S3BucketName:
@@ -15,6 +15,21 @@ Parameters:
   S3KeyLoginRegister:
     Type: String
     Description: S3 key (file name) for the Login/Register Lambda function
+  S3KeyCeaserCipher:
+    Type: String
+    Description: S3 key (file name) for the Ceaser Cipher Lambda function
+  S3KeyLogin:
+    Type: String
+    Description: S3 key (file name) for the Login Lambda function
+  S3KeySaveUsers:
+    Type: String
+    Description: S3 key (file name) for the Save Users Lambda function
+  S3KeySecurityCheck:
+    Type: String
+    Description: S3 key (file name) for the Security Check Lambda function
+  S3KeyStayDurationInfo:
+    Type: String
+    Description: S3 key (file name) for the Stay duration info Lambda function
 
 Resources:
   NotificationTopic:
@@ -31,6 +46,27 @@ Resources:
     Type: 'AWS::SQS::Queue'
     Properties:
       QueueName: 'BookingRequestQueue'
+
+  BookingRequestQueuePolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      Queues:
+        - Ref: BookingRequestQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'sns.amazonaws.com'
+            Action: 'sqs:SendMessage'
+            Resource: 
+              Fn::GetAtt:
+                - BookingRequestQueue
+                - Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: 
+                  Ref: BookingRequestTopic
 
   BookingRequestQueueSubscription:
     Type: 'AWS::SNS::Subscription'
@@ -96,6 +132,71 @@ Resources:
           SNS_TOPIC_ARN: 
             Ref: NotificationTopic
 
+  CeaserCipherFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      FunctionName: 'CeaserCipherFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code: 
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeyCeaserCipher
+      Runtime: 'nodejs20.x'
+
+  LoginFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      FunctionName: 'LoginFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code: 
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeyLogin
+      Runtime: 'nodejs20.x'
+
+  SaveUsersFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      FunctionName: 'SaveUsersFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code: 
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeySaveUsers
+      Runtime: 'nodejs20.x'
+
+  SecurityCheckFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties: 
+      FunctionName: 'SecurityCheckFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code: 
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeySecurityCheck
+      Runtime: 'nodejs20.x'
+  
+  StayDurationInfoFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'StayDurationInfoFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code:
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeyStayDurationInfo
+      Runtime: 'nodejs20.x'
+
   BookingApprovalEventSourceMapping:
     Type: 'AWS::Lambda::EventSourceMapping'
     Properties:
@@ -134,6 +235,61 @@ Resources:
       PathPart: 'login-register'
       RestApiId:
         Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceLogin:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'login'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayResourceSaveUsers:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'save-users'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
+  ApiGatewayResourceSecurityCheck:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'security-check'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceCeaserCipher:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'ceaser-cipher'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+  
+  ApiGatewayResourceStayDurationInfo:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'stayDuration-info'
+      RestApiId:
+        Ref: ApiGatewayRestApi
 
   ApiGatewayMethodBookingRequest:
     Type: 'AWS::ApiGateway::Method'
@@ -149,6 +305,18 @@ Resources:
         Type: 'AWS_PROXY'
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BookingRequestPublisherFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
 
   ApiGatewayMethodLoginRegister:
     Type: 'AWS::ApiGateway::Method'
@@ -164,6 +332,154 @@ Resources:
         Type: 'AWS_PROXY'
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginRegisterFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodLogin:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceLogin
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodSaveUsers:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceSaveUsers
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SaveUsersFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodSecurityCheck:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceSecurityCheck
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SecurityCheckFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodCeaserCipher:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceCeaserCipher
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CeaserCipherFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodStayDurationInfo:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceStayDurationInfo
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StayDurationInfoFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGateway::Deployment'
@@ -196,6 +512,56 @@ Resources:
       SourceArn:
         Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/login-register
 
+  LambdaPermissionCeaserCipher:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: CeaserCipherFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/ceaser-cipher
+
+  LambdaPermissionLogin:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: LoginFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/login
+
+  LambdaPermissionSaveUsers:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: SaveUsersFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/save-users
+
+  LambdaPermissionSecurityCheck:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: SecurityCheckFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/security-check
+
+  LambdaPermissionStayDurationInfo:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: StayDurationInfoFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/stayDuration-info
+
 Outputs:
   ApiGatewayEndpoint:
     Description: 'API Gateway endpoint URL'
@@ -225,3 +591,23 @@ Outputs:
     Description: 'Lambda Function ARN for Login/Register'
     Value: 
       Ref: LoginRegisterFunction
+  LambdaFunctionArnCeaserCipher:
+    Description: 'Lambda Function ARN for Ceaser Cipher'
+    Value: 
+      Ref: CeaserCipherFunction
+  LambdaFunctionArnLogin:
+    Description: 'Lambda Function ARN for Login'
+    Value: 
+      Ref: LoginFunction
+  LambdaFunctionArnSaveUsers:
+    Description: 'Lambda Function ARN for Save Users'
+    Value: 
+      Ref: SaveUsersFunction
+  LambdaFunctionArnSecurityCheck:
+    Description: 'Lambda Function ARN for Security Check'
+    Value: 
+      Ref: SecurityCheckFunction
+  LambdaFunctionArnStayDurationInfo:
+    Description: 'Lambda Function ARN for StayDurationInfo'
+    Value: 
+      Ref: StayDurationInfoFunction

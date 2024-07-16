@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { saveLocalStorage } from "../utils/utils";
+import config from "../config"; // Import the configuration file
 
 const CeaserCipher = () => {
   const [generatedString, setGeneratedString] = useState<string>("");
@@ -45,7 +46,7 @@ const CeaserCipher = () => {
     } else {
       axios
         .post(
-          "https://wt7ruma5q5.execute-api.us-east-1.amazonaws.com/ceaser-cipher",
+          `${config.apiGateway.BASE_URL}/ceaser-cipher`,
           {
             username: username,
             normalText: generatedString,
@@ -58,13 +59,30 @@ const CeaserCipher = () => {
           saveLocalStorage("accessToken", data.accessToken);
           saveLocalStorage("refreshToken", data.refreshToken);
           saveLocalStorage("username", data.username);
-          saveLocalStorage("useremail",data.useremail);
+          saveLocalStorage("useremail", data.useremail);
           saveLocalStorage("role", data.role);
-          toast.success("Login Successful")
-          navigate("/Home");
+          toast.success("Login Successful");
+          
+          // Call the login-register API
+          axios
+            .post(
+              `${config.apiGateway.BASE_URL}/login-register`,
+              {
+                email: data.useremail,
+                operation: "login"
+              }
+            )
+            .then((response) => {
+              console.log("Login/Register API Response:", response.data);
+              navigate("/Home");
+            })
+            .catch((error) => {
+              console.error("Error calling login-register API:", error);
+              toast.error("Error calling login-register API");
+            });
         })
         .catch((error) => {
-          console.log(error)
+          console.log(error);
           toast.error(error.response.data);
         });
     }

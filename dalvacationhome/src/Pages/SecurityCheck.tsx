@@ -2,6 +2,7 @@ import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import config from "../config";
 
 const SecurityCheck = () => {
   const location = useLocation();
@@ -30,7 +31,7 @@ const SecurityCheck = () => {
 
     axios
       .post(
-        "https://wt7ruma5q5.execute-api.us-east-1.amazonaws.com/security-check",
+        `${config.apiGateway.BASE_URL}/security-check`,
         securityQA,
         {
           headers: {
