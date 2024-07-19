@@ -54,46 +54,41 @@ const EmailVerification = () => {
   };
 
   return (
-    <div className="bg-slate-800 py-8 px-8 min-h-screen shadow-md shadow-slate-400 flex justify-center">
-      <div className="h-[50%] w-[50%] border-1-black border pt-2 border-black rounded-md bg-white">
-        <h1 className="text-md sm:text-xl text-xl font-bold font-mono text-black text-center">
-          Submit Code received in your mail
-        </h1>
-        <div className="flex justify-center">
-          <form
-            onSubmit={handleVerification}
-            className="text-md py-4 px-3 mb-4"
-          >
-            <div className="mb-4 px-3">
-              <label
-                htmlFor="verificationCode"
-                className="block text-gray-900 text-sm mb-2"
-              >
-                Verification Code
-              </label>
-              <input
-                type="text"
-                id="verificationCode"
-                name="verificationCode"
-                required
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                className="shadow-xl border border-gray-600 appearance-none rounded-md w-[80%] text-sm px-3 py-1 mx-1 text-gray-800 leading-tight focus:outline-none focus:shadow-outline"
-              />
-              {codeError && (
-                <p className="text-red-600">
-                  * Verification Code length must be 6
-                </p>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="btn bg-green-600 hover:bg-green-800 text-white text-sm font-bold py-2 px-4 mx-4 rounded"
+    <div className="bg-zinc-200 pt-10 min-h-screen flex justify-center items-center">
+      <div className="max-w-md w-full p-5 border rounded-lg shadow-lg bg-white">
+        <h2 className="text-2xl font-semibold mb-5 text-center">
+          Submit Code Received in Your Mail
+        </h2>
+        <form onSubmit={handleVerification} className="space-y-4">
+          <div>
+            <label
+              htmlFor="verificationCode"
+              className="block text-sm font-medium text-gray-700"
             >
-              Verify Code
-            </button>
-          </form>
-        </div>
+              Verification Code
+            </label>
+            <input
+              type="text"
+              id="verificationCode"
+              name="verificationCode"
+              required
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+            />
+            {codeError && (
+              <p className="text-red-600 mt-2">
+                * Verification Code length must be 6
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-sm"
+          >
+            Verify Code
+          </button>
+        </form>
       </div>
     </div>
   );

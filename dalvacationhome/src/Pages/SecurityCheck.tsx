@@ -87,81 +87,85 @@ const SecurityCheck = () => {
   };
 
   return (
-    <div className="bg-slate-800 py-8 px-8 min-h-screen shadow-md shadow-slate-400 flex justify-center">
-      <div className="h-[50%] w-[50%] border-1-black border pt-2 border-black rounded-md bg-white">
-        <h1 className="text-md sm:text-xl font-bold font-mono text-black text-center">
-          Step 2 : Provide Answers to Security Questions !!
-        </h1>
-        <div>
-          <form onSubmit={handleSubmit} className="text-md py-4 px-3 mb-4">
-            <div className="mb-4 px-3">
-              <label
-                htmlFor="favMovie"
-                className="block text-gray-900 text-sm mb-2"
-              >
-                What is your Favourite Movie ?
-              </label>
-              <input
-                type="text"
-                name="favMovie"
-                required
-                value={securityQA.favMovie}
-                onChange={handleChange}
-                className="shadow-xl border border-gray-600 appearance-none rounded-md w-[80%] text-sm px-3 py-1 mx-1 text-gray-800 leading-tight focus:outline-none focus:shadow-outline"
-              />
-            </div>
+    <div className="bg-zinc-200 pt-10 min-h-screen flex justify-center items-center">
+      <div className="max-w-md w-full p-5 border rounded-lg shadow-lg bg-white">
+        <h2 className="text-2xl font-semibold mb-5 text-center">
+          Step 2: Provide Answers to Security Questions
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="favMovie"
+              className="block text-sm font-medium text-gray-700"
+            >
+              What is your favourite movie?
+            </label>
+            <input
+              type="text"
+              name="favMovie"
+              required
+              value={securityQA.favMovie}
+              onChange={handleChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
 
-            <div className="mb-4 px-3">
-              <label
-                htmlFor="favFriend"
-                className="block text-gray-900 text-sm mb-2"
-              >
-                Who is your best Friend ?
-              </label>
-              <input
-                type="text"
-                name="favFriend"
-                required
-                value={securityQA.favFriend}
-                onChange={handleChange}
-                className="shadow-xl border border-gray-600 appearance-none rounded-md w-[80%] text-sm px-3 py-1 mx-1 text-gray-800 leading-tight focus:outline-none focus:shadow-outline"
-              />
-            </div>
+          <div>
+            <label
+              htmlFor="favFriend"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Who is your best friend?
+            </label>
+            <input
+              type="text"
+              name="favFriend"
+              required
+              value={securityQA.favFriend}
+              onChange={handleChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
 
-            <div className="mb-4 px-3">
-              <label
-                htmlFor="favFood"
-                className="block text-gray-900 text-sm mb-2"
-              >
-                What is your favourite food ?
-              </label>
-              <input
-                type="text"
-                name="favFood"
-                required
-                value={securityQA.favFood}
-                onChange={handleChange}
-                className="shadow-xl border border-gray-600 appearance-none rounded-md w-[80%] text-sm px-3 py-1 mx-1 text-gray-800 leading-tight focus:outline-none focus:shadow-outline"
-              />
+          <div>
+            <label
+              htmlFor="favFood"
+              className="block text-sm font-medium text-gray-700"
+            >
+              What is your favourite food?
+            </label>
+            <input
+              type="text"
+              name="favFood"
+              required
+              value={securityQA.favFood}
+              onChange={handleChange}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+
+          {error && (
+            <div className="text-red-700 text-sm">
+              Wrong answers, please try again.
             </div>
-            <div className="mb-4 px-3">
-              {error && <p className="text-red-700"> Wrong answers, try again</p>}
-            </div>
+          )}
+
+          <div className="flex space-x-4">
             <button
               type="submit"
-              className="btn bg-blue-600 hover:bg-blue-800 text-white text-sm font-bold py-2 px-4 mx-4 rounded"
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-sm"
             >
               Submit
             </button>
             <button
               type="reset"
               onClick={handleReset}
-              className="btn bg-gray-600 hover:bg-gray-800 text-white text-sm font-bold py-2 px-4 mx-4 rounded"
+              className="w-full py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md shadow-sm"
             >
               Reset
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

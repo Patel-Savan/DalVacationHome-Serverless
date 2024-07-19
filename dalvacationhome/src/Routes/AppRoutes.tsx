@@ -9,6 +9,7 @@ import SecurityCheck from "../Pages/SecurityCheck";
 
 import CeaserCipher from "../Pages/CeaserCipher";
 import Chatbot from "../Pages/Chatbot";
+import Feedback from "../Pages/Feedback";
 
 const AppRoutes = () => {
   return (
@@ -22,6 +23,7 @@ const AppRoutes = () => {
       <Route path="/SecurityCheck" element={<SecurityCheck />} />
       <Route path="/CeaserCipher" element={<CeaserCipher />} />
       <Route path="/Home" element={<Home />} />
+      <Route path="/feedback" element={<Feedback/>} />
     </Routes>
   );
 };
