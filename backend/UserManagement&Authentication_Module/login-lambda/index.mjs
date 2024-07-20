@@ -9,7 +9,7 @@ const dynamoDb = DynamoDBDocument.from(new DynamoDB({
 const tableName = "auth-info"
 
 const cognito = new CognitoIdentityProvider();
-const clientId = '56d2mgqmfdne9meq9amq5s5p2j';
+const clientId = '41lrh3o3oi7ar1sivs1llpqe5o';
 
 /**
  * Entry Point for Login 
