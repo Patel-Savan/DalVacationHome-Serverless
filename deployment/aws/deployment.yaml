@@ -30,6 +30,9 @@ Parameters:
   S3KeyStayDurationInfo:
     Type: String
     Description: S3 key (file name) for the Stay duration info Lambda function
+  S3KeyRoomBooking:
+    Type: String
+    Description: S3 key (file name) for the Room Booking Lambda function
 
 Resources:
   NotificationTopic:
@@ -197,6 +200,19 @@ Resources:
           Ref: S3KeyStayDurationInfo
       Runtime: 'nodejs20.x'
 
+  RoomBookingFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'RoomBookingFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::138012733653:role/LabRole'
+      Code:
+        S3Bucket:
+          Ref: S3BucketName
+        S3Key:
+          Ref: S3KeyRoomBooking
+      Runtime: 'nodejs20.x'
+
   BookingApprovalEventSourceMapping:
     Type: 'AWS::Lambda::EventSourceMapping'
     Properties:
@@ -291,6 +307,17 @@ Resources:
       RestApiId:
         Ref: ApiGatewayRestApi
 
+  ApiGatewayResourceRoomBooking:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'room-booking'
+      RestApiId:
+        Ref: ApiGatewayRestApi
+
   ApiGatewayMethodBookingRequest:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -305,6 +332,33 @@ Resources:
         Type: 'AWS_PROXY'
         Uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BookingRequestPublisherFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayMethodRoomBooking:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: ApiGatewayResourceRoomBooking
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RoomBookingFunction.Arn}/invocations
         IntegrationResponses:
           - StatusCode: 200
             ResponseParameters:
@@ -662,6 +716,31 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
+  ApiGatewayMethodRoomBookingOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: ApiGatewayResourceRoomBooking
+      RestApiId:
+        Ref: ApiGatewayRestApi
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-amz-security-token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGateway::Deployment'
@@ -671,6 +750,7 @@ Resources:
       StageName: 'prod'
     DependsOn:
       - ApiGatewayMethodBookingRequest
+      - ApiGatewayMethodRoomBooking
       - ApiGatewayMethodLoginRegister
       - ApiGatewayMethodLogin
       - ApiGatewayMethodSaveUsers
@@ -688,6 +768,16 @@ Resources:
       Principal: 'apigateway.amazonaws.com'
       SourceArn:
         Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/booking-request
+
+  LambdaPermissionRoomBooking:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        Ref: RoomBookingFunction
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/room-booking
 
   LambdaPermissionLoginRegister:
     Type: 'AWS::Lambda::Permission'
@@ -798,3 +888,7 @@ Outputs:
     Description: 'Lambda Function ARN for StayDurationInfo'
     Value: 
       Ref: StayDurationInfoFunction
+  LambdaFunctionArnRoomBooking:
+    Description: 'Lambda Function ARN for Room Booking'
+    Value: 
+      Ref: RoomBookingFunction
