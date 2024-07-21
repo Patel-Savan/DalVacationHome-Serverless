@@ -55,6 +55,9 @@ export async function handler(event) {
       body: JSON.stringify({
         referenceId: item.referenceId,
         message: "Booking successfully recorded in both tables.",
+        days: item.days,
+        roomType: item.roomType,
+        numberOfGuests: item.numberOfGuests,
       }),
     };
   } catch (error) {
