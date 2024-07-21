@@ -3,7 +3,7 @@ const config = {
     BASE_URL: "https://uvgia28wcl.execute-api.us-east-1.amazonaws.com/prod",
   },
   lookerStudio: {
-    EMBED_URL: "https://datastudio.google.com/embed/reporting/YOUR_REPORT_ID/page/YOUR_PAGE_ID", // Replace with your Looker Studio embed URL
+    EMBED_URL: "https://lookerstudio.google.com/embed/reporting/a4a39011-c706-4ed9-8069-3319cc4be65c/page/qSe6D", // Replace with your Looker Studio embed URL
   },
 };
 
