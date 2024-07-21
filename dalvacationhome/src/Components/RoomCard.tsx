@@ -6,9 +6,10 @@ import {
   Typography,
   Button,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Room {
-  id: number;
+  roomNumber: number;
   type: string;
   price: number;
   available: boolean;
@@ -16,8 +17,14 @@ interface Room {
 }
 
 const RoomCard: React.FC<{ room: Room }> = ({ room }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/room/${room.roomNumber}`);
+  };
+
   return (
-    <Card className="h-full">
+    <Card className="h-full cursor-pointer" onClick={handleCardClick}>
       <CardMedia
         component="img"
         height="140"
