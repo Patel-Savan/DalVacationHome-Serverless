@@ -1,4 +1,4 @@
-# This function defines the creation of Pub/Sub topics and a default subscription
+# This function defines the creation of Pub/Sub topics
 def GenerateConfig(context):
     resources = []
 
