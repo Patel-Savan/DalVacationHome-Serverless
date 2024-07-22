@@ -13,6 +13,7 @@
   "author": "Savan Patel",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1643.0"
+    "aws-sdk": "^2.1643.0",
+    "axios": "^1.7.2"
   }
 }
