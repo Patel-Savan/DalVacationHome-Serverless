@@ -4,11 +4,12 @@ import { toast } from "react-toastify";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { readLocalStorage } from "../utils/utils";
 import { useLocation } from "react-router-dom";
+import axios from "axios"
 
 const Feedback = () => {
 
   const location = useLocation()
-  const roomNumber = location.state ?.roomNumber || "";
+  const roomNumber = location.state?.roomNumber || "";
 
   const [feedbackData, setFeedbackData] = useState({
     roomNumber:roomNumber,
@@ -34,7 +35,7 @@ const Feedback = () => {
     const email = readLocalStorage("useremail") ?? "";
     const name = readLocalStorage("username") ?? "";
 
-    if(email == ""){
+    if(email === ""){
         toast.error("Please Login first");
         navigate("/");
     }
@@ -43,7 +44,7 @@ const Feedback = () => {
       username: name,
       useremail: email
     }));
-  }, []);
+  }, [navigate]);
 
   const handleChange = (
     e: ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>
@@ -57,7 +58,18 @@ const Feedback = () => {
     e.preventDefault();
 
     console.log(feedbackData);
-    toast.success("Feedback Submitted");
+
+    axios.post("https://wt7ruma5q5.execute-api.us-east-1.amazonaws.com/reviews",feedbackData)
+      .then(response => {
+        toast.success("Feedback Submitted");
+        console.log(response);
+        navigate("/bookings")
+      })
+      .catch(error => {
+        toast.error("Error submitting feedback");
+        console.log(error);
+      })
+    
   };
 
   return (
@@ -167,6 +179,7 @@ const Feedback = () => {
             <textarea
               id="review"
               name="review"
+              required
               value={feedbackData.review}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"

@@ -20,8 +20,17 @@ interface Room {
   amenities: string[];
 }
 
+interface Review {
+  review: string;
+  username: string;
+  useremail: string;
+}
+
 const RoomDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [username, setUsername] = useState<String | null>("");
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [firstFiveReviews, setFirstFiveReviews] = useState<Review[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +45,7 @@ const RoomDetail: React.FC = () => {
         const response = await axios.get(
           `https://23xnltop10.execute-api.us-east-1.amazonaws.com/dev/room/getRoom`,
           {
-            params: { roomNumber: id },
+            params: { roomNumber: id }
           }
         );
         console.log("Response data:", response.data);
@@ -52,8 +61,45 @@ const RoomDetail: React.FC = () => {
       }
     };
 
+    const getReviewws = async () => {
+      console.log("Getting Reviews for the room:", id);
+
+      try {
+        const response = await axios.get(
+          "https://wt7ruma5q5.execute-api.us-east-1.amazonaws.com/reviews",
+          {
+            params: { roomNumber: id }
+          }
+        );
+        console.log("Response data:", response.data);
+
+        const body = response.data;
+
+        if (body.data) {
+          console.log(body.data);
+          setReviews(body.data);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        setError("Failed to load Reviews");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchRoom();
+    getReviewws();
   }, [id]);
+
+  useEffect(() => {
+    const name = localStorage.getItem("username");
+    setUsername(name);
+  }, []);
+
+  useEffect(() => {
+    const data = reviews.slice(0, 5);
+    setFirstFiveReviews(data);
+  }, [reviews]);
 
   const handleBooking = async () => {
     if (!startDate || !endDate) {
@@ -62,7 +108,6 @@ const RoomDetail: React.FC = () => {
     }
 
     const userEmail = localStorage.getItem("useremail");
-
     if (!userEmail) {
       alert("User email not found in local storage.");
       return;
@@ -72,12 +117,12 @@ const RoomDetail: React.FC = () => {
       const bookingResponse = await axios.post(
         `https://toeglvrdv9.execute-api.us-east-1.amazonaws.com/booking/room-booking`,
         {
-          userId: "1",
+          username: username,
           roomNumber: id,
           entryDate: startDate.toISOString().slice(0, 10),
           exitDate: endDate.toISOString().slice(0, 10),
           roomType: room?.type,
-          numberOfGuests,
+          numberOfGuests
         }
       );
 
@@ -85,52 +130,62 @@ const RoomDetail: React.FC = () => {
 
       const bookingRequestPayload = {
         user_email: userEmail,
-        booking_details: `Room ${id}, ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
-        booking_approved: true,
+        booking_details: `Room ${id}, ${startDate
+          .toISOString()
+          .slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
+        booking_approved: true
       };
 
-      const response = await fetch(`${config.apiGateway.BASE_URL}/booking-request`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingRequestPayload),
-      });
+      const response = await fetch(
+        `${config.apiGateway.BASE_URL}/booking-request`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(bookingRequestPayload)
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Network response was not ok ' + response.statusText);
+        throw new Error("Network response was not ok " + response.statusText);
       }
 
       const data = await response.json();
-      console.log('Booking request response:', data);
-      console.log('after success booking notification lambda')
+      console.log("Booking request response:", data);
+      console.log("after success booking notification lambda");
       toast.success("Room Booked!!");
     } catch (error) {
       console.error("Error booking room:", error);
       const bookingRequestPayload = {
         user_email: userEmail,
-        booking_details: `Room ${id}, ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
-        booking_approved: false,
+        booking_details: `Room ${id}, ${startDate
+          .toISOString()
+          .slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
+        booking_approved: false
       };
 
       try {
-        console.log('sending failed booking notification');
-        const response = await fetch(`${config.apiGateway.BASE_URL}/booking-request`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(bookingRequestPayload),
-        });
+        console.log("sending failed booking notification");
+        const response = await fetch(
+          `${config.apiGateway.BASE_URL}/booking-request`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(bookingRequestPayload)
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('Network response was not ok ' + response.statusText);
+          throw new Error("Network response was not ok " + response.statusText);
         }
 
         const data = await response.json();
-        console.log('Booking request response (error case):', data);
+        console.log("Booking request response (error case):", data);
       } catch (error) {
-        console.error('Error sending booking request (error case):', error);
+        console.error("Error sending booking request (error case):", error);
       }
 
       toast.error("Failed to book a room");
@@ -150,7 +205,7 @@ const RoomDetail: React.FC = () => {
         <div
           className="md:w-1/2 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${room.imageUrl || ""})`,
+            backgroundImage: `url(${room.imageUrl || ""})`
           }}
         >
           {/* Empty div for background image */}
@@ -161,6 +216,25 @@ const RoomDetail: React.FC = () => {
           <p className="text-xl mb-4">
             {room.available ? "Available" : "Not Available"}
           </p>
+
+          <div className="m-2 text-xl">
+            <h1 className="font-bold">Reviews</h1>
+            {firstFiveReviews.length > 0 ? (
+              <>
+                {firstFiveReviews.map((item, index) => (
+                  <div className="m-1">
+                    <h2 className="font-mono">
+                      {index + 1}.{item.username}
+                    </h2>
+                    <p>{item.review}</p>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <p>No Review available.</p>
+            )}
+          </div>
+          <div className="font-bold m-2 text-xl">Book Room</div>
           <DatePicker
             selected={startDate}
             onChange={(date: Date | null) => setStartDate(date || undefined)}

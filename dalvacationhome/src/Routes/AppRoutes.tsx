@@ -11,6 +11,7 @@ import Chatbot from "../Pages/Chatbot";
 import Feedback from "../Pages/Feedback";
 import RoomDetail from "../Pages/RoomDetails";
 import AdminDashboard from "../Pages/AdminDashboard"; // Import the AdminDashboard component
+import Bookings from "../Pages/Bookings"
 
 const AppRoutes = () => {
   return (
@@ -29,6 +30,7 @@ const AppRoutes = () => {
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/room/:id" element={<RoomDetail />} /> {/* Added RoomDetail route */}
       <Route path="/admin" element={<AdminDashboard />} /> {/* Added AdminDashboard route */}
+      <Route path="/bookings" element={<Bookings/>} />
     </Routes>
   );
 };

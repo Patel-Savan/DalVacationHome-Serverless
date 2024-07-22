@@ -4,11 +4,14 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+  const [role, setRole] = useState<String | null>("");
 
   useEffect(() => {
     const token = localStorage.getItem("idToken");
     if (token) {
       setIsAuthenticated(true);
+      const userRole = localStorage.getItem("role");
+      setRole(userRole);
     }
   }, []);
 
@@ -41,12 +44,25 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/admin"
-                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Admin Dashboard
-              </Link>
+              {role === "customer" ? (
+                <>
+                  <Link
+                    to="/bookings"
+                    className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    MyBookings
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/admin"
+                    className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Admin Dashboard
+                  </Link>
+                </>
+              )}
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"

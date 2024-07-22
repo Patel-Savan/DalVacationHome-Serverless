@@ -45,14 +45,11 @@ const CeaserCipher = () => {
       setError(true);
     } else {
       axios
-        .post(
-          `${config.apiGateway.BASE_URL}/ceaser-cipher`,
-          {
-            username: username,
-            normalText: generatedString,
-            cipherText: cipherText,
-          }
-        )
+        .post(`${config.apiGateway.BASE_URL}/ceaser-cipher`, {
+          username: username,
+          normalText: generatedString,
+          cipherText: cipherText
+        })
         .then((response) => {
           const data = response.data;
           saveLocalStorage("idToken", data.idToken);
@@ -62,16 +59,13 @@ const CeaserCipher = () => {
           saveLocalStorage("useremail", data.useremail);
           saveLocalStorage("role", data.role);
           toast.success("Login Successful");
-          
+
           // Call the login-register API
           axios
-            .post(
-              `${config.apiGateway.BASE_URL}/login-register`,
-              {
-                email: data.useremail,
-                operation: "login"
-              }
-            )
+            .post(`${config.apiGateway.BASE_URL}/login-register`, {
+              email: data.useremail,
+              operation: "login"
+            })
             .then((response) => {
               console.log("Login/Register API Response:", response.data);
               navigate("/Home");
@@ -83,7 +77,11 @@ const CeaserCipher = () => {
         })
         .catch((error) => {
           console.log(error);
-          toast.error(error.response.data);
+          if (error.response) {
+            toast.error(error.response.data);
+          } else {
+            toast.error(error.message);
+          }
         });
     }
   };
@@ -94,11 +92,11 @@ const CeaserCipher = () => {
   };
 
   return (
-    <div className="bg-slate-800 py-8 px-8 min-h-screen shadow-md shadow-slate-400 flex justify-center">
-      <div className="w-full max-w-md border border-black rounded-md bg-white p-8">
-        <h1 className="text-lg font-bold text-center text-black mb-4">
+    <div className="bg-zinc-200 pt-10 min-h-screen flex justify-center items-center">
+      <div className="max-w-md w-full p-5 border rounded-lg shadow-lg bg-white">
+        <h2 className="text-2xl font-semibold mb-5 text-center">
           Step 3: Complete the Caesar Cipher Check to Log in to the System
-        </h1>
+        </h2>
         <form onSubmit={handleCipherCheck} className="space-y-4">
           <div className="mb-4 px-3 font-bold text-md text-red-800">
             Text = {generatedString}
@@ -106,7 +104,7 @@ const CeaserCipher = () => {
           <div className="mb-4">
             <label
               htmlFor="cipherText"
-              className="block text-gray-900 text-sm mb-2"
+              className="block text-sm font-medium text-gray-700"
             >
               Enter Cipher Code using your key
             </label>
@@ -117,25 +115,26 @@ const CeaserCipher = () => {
               required
               value={cipherText}
               onChange={handleChange}
-              className="shadow-xl border border-gray-600 appearance-none rounded-md w-full text-sm px-3 py-2 text-gray-800 leading-tight focus:outline-none focus:shadow-outline"
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
             />
             {error && (
-              <p className="text-red-600 text-sm mt-2">
-                * Length of Cipher text should be 3 and should only contain letters
+              <p className="text-red-600 mt-2">
+                * Length of Cipher text should be 3 and should only contain
+                letters
               </p>
             )}
           </div>
-          <div className="flex justify-between mt-4">
+          <div className="flex space-x-4">
             <button
               type="submit"
-              className="bg-green-600 hover:bg-green-800 text-white text-sm font-bold py-2 px-4 rounded"
+              className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow-sm"
             >
-              Verify Code
+              Submit
             </button>
             <button
               type="reset"
               onClick={handleReset}
-              className="bg-gray-600 hover:bg-gray-800 text-white text-sm font-bold py-2 px-4 rounded"
+              className="w-full py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-md shadow-sm"
             >
               Reset
             </button>
