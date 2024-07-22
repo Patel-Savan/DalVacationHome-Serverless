@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [role, setRole] = useState(null); // State variable for role
+  const [role, setRole] = useState(""); // State variable for role
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -11,6 +11,8 @@ const Navbar = () => {
     const userRole = localStorage.getItem("role"); // Get the role from localStorage
     if (token) {
       setIsAuthenticated(true);
+    }
+    if(userRole){
       setRole(userRole); // Set the role state
     }
   }, []);
@@ -18,7 +20,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
-    setRole(null); // Clear the role state
+    setRole(""); // Clear the role state
     navigate("/login");
   };
 

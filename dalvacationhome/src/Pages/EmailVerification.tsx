@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
 import { toast } from "react-toastify";
 import poolData from "../utils/UserPoolInfo";
+import config from "../config"; // Make sure this points to your config file
 
 const EmailVerification = () => {
   const [verificationCode, setVerificationCode] = useState<string>("");
@@ -27,7 +28,7 @@ const EmailVerification = () => {
 
     const cognitoUser = new CognitoUser(userData);
 
-    cognitoUser.confirmRegistration(verificationCode, true, (err, result) => {
+    cognitoUser.confirmRegistration(verificationCode, true, async (err, result) => {
       if (err) {
         console.error(err.message);
         toast.error("Failed to verify code. Please try again.");
@@ -35,6 +36,30 @@ const EmailVerification = () => {
       }
       console.log("Verification successful:", result);
       toast.success("Verification successful!");
+
+      // Call the login-register lambda
+      try {
+        const response = await fetch(`${config.apiGateway.BASE_URL}/login-register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            operation: 'register',
+            username: username
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+
+        const data = await response.json();
+        console.log('Register operation response:', data);
+      } catch (error) {
+        console.error('Error calling login-register lambda:', error);
+      }
+
       navigate("/Login", {
         state: {
           username: username
