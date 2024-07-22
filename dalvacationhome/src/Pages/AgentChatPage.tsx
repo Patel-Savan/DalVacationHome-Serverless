@@ -39,7 +39,7 @@ const AgentChatPage: React.FC = () => {
         <Typography variant="body1" fontWeight="bold">
           Toggle to Active to be considered for Live Chat! Or to Inactive to Take a Break!
         </Typography>
-        <StatusToggle />
+        <StatusToggle agentId={agentId} />
         {sessionId ? (
           <AgentChatBox sessionId={sessionId} agentId={agentId} />
         ) : (

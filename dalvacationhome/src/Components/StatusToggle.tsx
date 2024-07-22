@@ -4,7 +4,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import axios from 'axios';
 
-const StatusToggle: React.FC = () => {
+interface StatusToggleProps {
+  agentId: string;
+}
+
+const StatusToggle: React.FC<StatusToggleProps> = ({ agentId }) => {
   const [status, setStatus] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -12,8 +16,8 @@ const StatusToggle: React.FC = () => {
     // Function to load initial status value from API
     const loadStatus = async () => {
       try {
-        const response = await axios.get('https://api.example.com/status'); // Replace with your API endpoint
-        setStatus(response.data.active); // Assuming the API returns an object with an 'active' boolean field
+        const response = await axios.post('https://us-central1-dalvacationhome-dev.cloudfunctions.net/process-agent-status', { agent_id: agentId });
+        setStatus(response.data.status === 'active');
       } catch (error) {
         console.error('Error loading status:', error);
       } finally {
@@ -22,7 +26,7 @@ const StatusToggle: React.FC = () => {
     };
 
     loadStatus();
-  }, []);
+  }, [agentId]);
 
   const handleToggleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const newStatus = event.target.checked;
@@ -30,7 +34,10 @@ const StatusToggle: React.FC = () => {
 
     // Function to update status via API call
     try {
-      await axios.post('https://api.example.com/update-status', { active: newStatus }); // Replace with your API endpoint
+      await axios.post('https://us-central1-dalvacationhome-dev.cloudfunctions.net/process-agent-status', {
+        agent_id: agentId,
+        status: newStatus ? 'active' : 'inactive',
+      });
     } catch (error) {
       console.error('Error updating status:', error);
       // Optionally revert status change on error
