@@ -6,9 +6,10 @@ import axios from 'axios';
 
 interface StatusToggleProps {
   agentId: string;
+  onActiveStatusChange: (isActive: boolean) => void;
 }
 
-const StatusToggle: React.FC<StatusToggleProps> = ({ agentId }) => {
+const StatusToggle: React.FC<StatusToggleProps> = ({ agentId, onActiveStatusChange }) => {
   const [status, setStatus] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -32,12 +33,12 @@ const StatusToggle: React.FC<StatusToggleProps> = ({ agentId }) => {
     const newStatus = event.target.checked;
     setStatus(newStatus);
 
-    // Function to update status via API call
     try {
       await axios.post('https://us-central1-dalvacationhome-dev.cloudfunctions.net/process-agent-status', {
         agent_id: agentId,
         status: newStatus ? 'active' : 'inactive',
       });
+      onActiveStatusChange(newStatus);
     } catch (error) {
       console.error('Error updating status:', error);
       // Optionally revert status change on error

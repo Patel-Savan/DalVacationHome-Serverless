@@ -12,18 +12,34 @@ const AgentChatPage: React.FC = () => {
   const agentId = 'agent100';  // TODO: Replace with the actual agent ID
 
   useEffect(() => {
+    if (sessionId) return; // If sessionId is already set, no need to check again
+
     const checkActiveSessions = async () => {
       try {
         const response = await axios.post('https://us-central1-dalvacationhome-dev.cloudfunctions.net/check-agent-session', { agent_id: agentId });
-        setSessionId(response.data.sessionId);
+        if (response.data.sessionId) {
+          setSessionId(response.data.sessionId);
+          setError(null);
+        } else {
+          setError('No active session found');
+          setTimeout(checkActiveSessions, 120000); // Retry after 2 minutes if no active session found
+        }
       } catch (error) {
         console.error('Error checking active sessions:', error);
         setError('No active session found');
+        setTimeout(checkActiveSessions, 120000); // Retry after 2 minutes on error
       }
     };
 
     checkActiveSessions();
-  }, [agentId]);
+  }, [agentId, sessionId]);
+
+  const handleActiveStatusChange = (isActive: boolean) => {
+    if (isActive) {
+      setSessionId(null); // Reset sessionId to trigger session check
+      setError('Checking for active session...');
+    }
+  };
 
   return (
     <>
@@ -39,7 +55,7 @@ const AgentChatPage: React.FC = () => {
         <Typography variant="body1" fontWeight="bold">
           Toggle to Active to be considered for Live Chat! Or to Inactive to Take a Break!
         </Typography>
-        <StatusToggle agentId={agentId} />
+        <StatusToggle agentId={agentId} onActiveStatusChange={handleActiveStatusChange} />
         {sessionId ? (
           <AgentChatBox sessionId={sessionId} agentId={agentId} />
         ) : (

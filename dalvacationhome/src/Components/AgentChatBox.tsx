@@ -35,6 +35,10 @@ const AgentChatBox: React.FC<AgentChatBoxProps> = ({ sessionId, agentId }) => {
     };
 
     fetchMessages();
+
+    const intervalId = setInterval(fetchMessages, 10000); // Check for new messages every 10 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [sessionId]);
 
   const handleSendMessage = async () => {
