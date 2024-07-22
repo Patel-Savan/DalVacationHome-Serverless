@@ -14,7 +14,7 @@ const BookingCard: React.FC<CardProps> = ({
   roomType,
   entryDate,
   exitDate,
-  handleFeedback
+  handleFeedback,
 }) => {
   const isFeedbackVisible = dayjs().isAfter(dayjs(exitDate));
 
@@ -30,7 +30,7 @@ const BookingCard: React.FC<CardProps> = ({
           </div>
         </div>
         <div className="w-[50%]">
-        <div className="mr-4">
+          <div className="mr-4">
             <span className="font-semibold">Stay From:</span> {entryDate}
           </div>
           <div>
