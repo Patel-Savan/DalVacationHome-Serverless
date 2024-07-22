@@ -7,23 +7,30 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 export async function handler(event) {
   const {
-    userId,
+    username,
     roomNumber,
     entryDate,
     exitDate,
-    days,
     roomType,
     numberOfGuests,
   } = event;
 
+  // Convert entryDate and exitDate from string to Date objects
+  const entry = new Date(entryDate);
+  const exit = new Date(exitDate);
+
+  // Calculate the difference in days
+  const timeDiff = exit.getTime() - entry.getTime();
+  const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
   // Prepare the item to be inserted into DynamoDB
   const item = {
-    userId: userId,
+    username: username,
     roomId: roomNumber,
     referenceId: `REF${Date.now()}`, // Simple way to generate a unique referenceId
     entryDate: entryDate,
     exitDate: exitDate,
-    days: parseInt(days, 10),
+    days: days, // Number of days calculated from date difference
     roomType: roomType,
     numberOfGuests: parseInt(numberOfGuests, 10),
   };
@@ -50,8 +57,14 @@ export async function handler(event) {
     // Add data to bookingHistory table
     await ddbDocClient.send(new PutCommand(historyParams));
 
+    // Return response with CORS headers
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*", // Allows all domains to access your API
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "OPTIONS, POST, GET",
+      },
       body: JSON.stringify({
         referenceId: item.referenceId,
         message: "Booking successfully recorded in both tables.",
@@ -64,6 +77,9 @@ export async function handler(event) {
     console.error("Error inserting item into DynamoDB", error);
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*", // Ensures the error message is also accessible from any domain
+      },
       body: JSON.stringify({ message: "Failed to record booking." }),
     };
   }
