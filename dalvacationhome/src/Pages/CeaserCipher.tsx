@@ -37,7 +37,7 @@ const CeaserCipher = () => {
     setError(false);
   };
 
-  const handleCipherCheck = (e: FormEvent<HTMLFormElement>) => {
+  const handleCipherCheck = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(false);
     const textRegex = /^[A-Za-z]+$/;
@@ -83,6 +83,50 @@ const CeaserCipher = () => {
             toast.error(error.message);
           }
         });
+      try {
+        const ceaserCipherResponse = await axios.post(
+          `${config.apiGateway.BASE_URL}/ceaser-cipher`,
+          {
+            username: username,
+            normalText: generatedString,
+            cipherText: cipherText,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = ceaserCipherResponse.data;
+        saveLocalStorage("idToken", data.idToken);
+        saveLocalStorage("accessToken", data.accessToken);
+        saveLocalStorage("refreshToken", data.refreshToken);
+        saveLocalStorage("username", data.username);
+        saveLocalStorage("useremail", data.useremail);
+        saveLocalStorage("role", data.role);
+        toast.success("Login Successful");
+
+        // Call the login-register API
+        const loginRegisterResponse = await axios.post(
+          `${config.apiGateway.BASE_URL}/login-register`,
+          {
+            email: data.useremail,
+            operation: "login",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("Login/Register API Response:", loginRegisterResponse.data);
+        navigate("/Home");
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("An error occurred during the process.");
+      }
     }
   };
 

@@ -40,6 +40,17 @@ resources:
       httpsTrigger: {}
       location: us-central1 #TODO: Change it to dynamic naming from .env file
 
+  - name: process-agent-status
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: process-agent-status
+      entryPoint: agent_status
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-pubsub-code-bucket/process_agent_status_function_source.zip #TODO: Change it to dynamic naming from .env file
+      httpsTrigger: {}
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
+
   - name: process-customer-message
     type: gcp-types/cloudfunctions-v1:projects.locations.functions
     properties:

@@ -29,7 +29,7 @@ def check_and_subscribe_user(email):
     if email not in subscribed_emails:
         subscribe_user(email)
 
-def send_notification(email,message,subject):
+def send_notification(email, message, subject):
     sns_client.publish(
         TopicArn=topic_arn,
         Message=message,
@@ -78,17 +78,27 @@ def lambda_handler(event, context):
         
         # Check and subscribe the user if not already subscribed
         check_and_subscribe_user(email)
-         #publishing notification to sns topic
-        send_notification(email,message,subject)
+        # Publishing notification to SNS topic
+        send_notification(email, message, subject)
         
         response = {
             'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
             'body': json.dumps({'message': f'{operation.capitalize()} notification sent successfully'})
         }
     except Exception as e:
         print(f"Error: {str(e)}")
         response = {
             'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
             'body': json.dumps({'error': str(e)})
         }
     

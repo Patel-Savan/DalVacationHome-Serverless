@@ -3,21 +3,24 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState(""); // State variable for role
   const navigate = useNavigate();
-  const [role, setRole] = useState<String | null>("");
 
   useEffect(() => {
     const token = localStorage.getItem("idToken");
+    const userRole = localStorage.getItem("role"); // Get the role from localStorage
     if (token) {
       setIsAuthenticated(true);
-      const userRole = localStorage.getItem("role");
-      setRole(userRole);
+    }
+    if(userRole){
+      setRole(userRole); // Set the role state
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
+    setRole(""); // Clear the role state
     navigate("/login");
   };
 
@@ -44,7 +47,7 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              {role === "customer" ? (
+             {role === "customer" ? (
                 <>
                   <Link
                     to="/bookings"

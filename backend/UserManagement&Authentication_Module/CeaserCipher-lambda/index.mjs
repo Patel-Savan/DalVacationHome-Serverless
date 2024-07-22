@@ -6,11 +6,6 @@ const dynamoDb = DynamoDBDocument.from(new DynamoDB({ region: "us-east-1" }));
 
 const GOOGLE_CLOUD_FUNCTION_URL = "https://us-central1-csci-5409-428302.cloudfunctions.net/login-info"; // Replace with your actual URL
 
-/**
- * Entry Point for Ceaser-Cipher Check
- * @param {*} event Event body containing information about request from frontend
- * @returns json body based on user input
- */
 export const handler = async (event) => {
   const body = JSON.parse(event.body);
 
@@ -32,9 +27,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // Getting Encryption key that was provided during Signup from Database
     var dataItem = await getKeyFromDynamoDB(username);
-
     console.log(dataItem);
 
     if (!dataItem || !dataItem.username) {
@@ -45,7 +38,6 @@ export const handler = async (event) => {
     }
 
     const key = dataItem.key;
-    // Verifying Ciphertext provided by User
     const isValid = verifyCipherText(normalText, cipherText, key);
 
     console.log(isValid);
@@ -53,10 +45,13 @@ export const handler = async (event) => {
       return buildResponse(401, "Incorrect Encryption");
     }
 
-    // Getting token from Database that was provided by AWS Cognito during first step
     const data = await getToken(username);
+    console.log("Token data:", data); // Add this line
 
-    // Deleting tokens from database for security reasons
+    if (!data) {
+      return buildResponse(401, "No tokens found for user");
+    }
+
     if (data) {
       await deleteToken(username);
     }
@@ -77,16 +72,14 @@ export const handler = async (event) => {
       time: loginTime
     };
 
-    // Getting Login Info from DynamoDB
     const loginInfo = await getLoginInfo(dataItem.username);
 
     if (loginInfo) {
-      await updateLoginInfo(dataItem.username, loginStats); // Updating Login info If User has logged in before
+      await updateLoginInfo(dataItem.username, loginStats);
     } else {
-      await saveLoginInfo(userInfo, loginStats); // Saving new record to DynamoDB for User If login for the first time
+      await saveLoginInfo(userInfo, loginStats);
     }
 
-    // Call Google Cloud Function
     const cloudFunctionResponse = await axios.post(GOOGLE_CLOUD_FUNCTION_URL, {
       username: dataItem.username,
       useremail: dataItem.useremail,
@@ -121,10 +114,6 @@ export const handler = async (event) => {
   }
 };
 
-/**
- * Function for Deleting tokens from database
- * @param {*} username username for which tokens are to be deleted
- */
 async function deleteToken(username) {
   const params = {
     TableName: "auth-info",
@@ -133,14 +122,11 @@ async function deleteToken(username) {
     }
   };
 
-  await dynamoDb.delete(params);
+  if (username) {
+    await dynamoDb.delete(params);
+  }
 }
 
-/**
- * Function for getting tokens from database
- * @param {*} username username for which tokens are to be fetched
- * @returns token for user
- */
 async function getToken(username) {
   const params = {
     TableName: "auth-info",
@@ -149,21 +135,12 @@ async function getToken(username) {
     }
   };
 
-  return await dynamoDb.get(params).then(
-    (response) => {
-      return response.Item;
-    },
-    (error) => {
-      console.log(error.message);
-    }
-  );
+  const response = await dynamoDb.get(params);
+  console.log("getToken response:", response);
+
+  return response.Item;
 }
 
-/**
- * Function to get current Login Info of Users
- * @param {*} username username for which login info is to be fetched
- * @returns login info object if present
- */
 async function getLoginInfo(username) {
   const params = {
     TableName: "login-info",
@@ -182,13 +159,6 @@ async function getLoginInfo(username) {
   );
 }
 
-/**
- * Function to update the login info of users
- * add new login info when user logs into the system
- * @param {*} username username for which login info is to be updated
- * @param {*} loginStats login info object to be added to the list
- * @returns true if update was successful
- */
 async function updateLoginInfo(username, loginStats) {
   const params = {
     TableName: "login-info",
@@ -212,12 +182,6 @@ async function updateLoginInfo(username, loginStats) {
   );
 }
 
-/**
- * Function for saving login info when user logs in the first time
- * @param {*} userInfo user information object
- * @param {*} loginStats login information object to be added
- * @returns true if information add was successful
- */
 async function saveLoginInfo(userInfo, loginStats) {
   const item = {
     username: userInfo.username,
@@ -239,11 +203,6 @@ async function saveLoginInfo(userInfo, loginStats) {
   }
 }
 
-/**
- * Function for getting encryption key from database for Checking cipher text
- * @param {*} username username for which key is to be fetched
- * @returns encryption key
- */
 async function getKeyFromDynamoDB(username) {
   const params = {
     TableName: "serverless-project-users",
@@ -284,32 +243,17 @@ const getKeyFromDynamoDBUsingEmail = async (email) => {
   return null;
 };
 
-/**
- * Function for Verifying Cipher text provided by user
- * @param {*} normalText normal text
- * @param {*} cipherText cipher text provided by user
- * @param {*} key key provided by user during signup
- * @returns boolean based on cipher text
- */
 function verifyCipherText(normalText, cipherText, key) {
-  // Getting correct cipher text for given normal text and key
   const encrypted = caesarCipherEncrypt(normalText, parseInt(key));
   return encrypted === cipherText;
 }
 
-/**
- * Function for getting cipher text based on normal text and key
- * @param {*} text text for which cipher text is to be generated
- * @param {*} shift key for generating cipher text
- * @returns cipher text
- */
 function caesarCipherEncrypt(text, shift) {
   return text
     .split("")
     .map((char) => {
       if (char.match(/[a-z]/i)) {
         const code = char.charCodeAt(0);
-
         return String.fromCharCode(((code - 97 + shift) % 26) + 97);
       }
       return char;
@@ -317,12 +261,6 @@ function caesarCipherEncrypt(text, shift) {
     .join("");
 }
 
-/**
- * Function for creating response to be sent to frontend
- * @param {*} statusCode status code of the response
- * @param {*} message message supporting status code
- * @returns created response
- */
 function buildResponse(statusCode, message) {
   const response = {
     statusCode: statusCode,
