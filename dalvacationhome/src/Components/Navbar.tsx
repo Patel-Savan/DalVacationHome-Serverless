@@ -21,7 +21,7 @@ const Navbar = () => {
     localStorage.clear();
     setIsAuthenticated(false);
     setRole(""); // Clear the role state
-    navigate("/login");
+    
   };
 
   return (
