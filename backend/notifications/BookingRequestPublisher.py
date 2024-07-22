@@ -21,12 +21,12 @@ def lambda_handler(event, context):
 
         user_email = body['user_email']
         booking_details = body['booking_details']
-        booking_approved= body['booking_approved']
+        booking_approved = body['booking_approved']
          
         # Log the email and booking details
         logger.info("User email: %s", user_email)
         logger.info("Booking details: %s", booking_details)
-        logger.info("Booking booking_approved: %s", booking_approved)
+        logger.info("Booking approved: %s", booking_approved)
         
         # Publish booking request to SNS topic
         sns_client.publish(
@@ -43,6 +43,11 @@ def lambda_handler(event, context):
         
         response = {
             'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+            },
             'body': json.dumps({'message': 'Booking request sent for approval successfully'})
         }
         logger.info("Response: %s", response)
@@ -51,7 +56,13 @@ def lambda_handler(event, context):
         logger.error("Error: %s", str(e))
         response = {
             'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+            },
             'body': json.dumps({'error': str(e)})
         }
     
     return response
+
