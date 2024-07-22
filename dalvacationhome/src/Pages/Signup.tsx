@@ -57,6 +57,7 @@ const Signup = () => {
           navigate("/EmailVerification", {
             state: {
               username: username,
+              email: email,
             },
           });
         }

@@ -12,6 +12,7 @@ const EmailVerification = () => {
 
   const location = useLocation();
   const username: string = location.state?.username || "";
+  const email: string = location.state?.email || "";
 
   useEffect(() => {
     if (!username) {
@@ -46,7 +47,7 @@ const EmailVerification = () => {
           },
           body: JSON.stringify({
             operation: 'register',
-            username: username
+            email: email,
           })
         });
 
