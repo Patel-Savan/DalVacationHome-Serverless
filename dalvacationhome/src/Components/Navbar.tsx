@@ -12,7 +12,7 @@ const Navbar = () => {
     if (token) {
       setIsAuthenticated(true);
     }
-    if(userRole){
+    if (userRole) {
       setRole(userRole); // Set the role state
     }
   }, []);
@@ -21,7 +21,7 @@ const Navbar = () => {
     localStorage.clear();
     setIsAuthenticated(false);
     setRole(""); // Clear the role state
-    navigate("/login");
+    
   };
 
   return (
@@ -47,7 +47,7 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-             {role === "customer" ? (
+              {role === "customer" ? (
                 <>
                   <Link
                     to="/bookings"
@@ -63,6 +63,13 @@ const Navbar = () => {
                     className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
                   >
                     Admin Dashboard
+                  </Link>
+
+                  <Link
+                    to="/add-room"
+                    className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Add Room
                   </Link>
                 </>
               )}
