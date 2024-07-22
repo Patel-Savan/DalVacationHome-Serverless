@@ -39,6 +39,14 @@ const StatusToggle: React.FC<StatusToggleProps> = ({ agentId, onActiveStatusChan
         status: newStatus ? 'active' : 'inactive',
       });
       onActiveStatusChange(newStatus);
+
+      if (!newStatus) {
+        // Handle the case when agent marks themselves as inactive
+        await axios.post('https://us-central1-dalvacationhome-dev.cloudfunctions.net/check-agent-session', {
+          agent_id: agentId,
+          delete: true
+        });
+      }
     } catch (error) {
       console.error('Error updating status:', error);
       // Optionally revert status change on error
