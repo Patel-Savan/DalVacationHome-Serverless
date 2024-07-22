@@ -3,18 +3,22 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState(null); // State variable for role
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("idToken");
+    const userRole = localStorage.getItem("role"); // Get the role from localStorage
     if (token) {
       setIsAuthenticated(true);
+      setRole(userRole); // Set the role state
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
+    setRole(null); // Clear the role state
     navigate("/login");
   };
 
@@ -41,12 +45,14 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/admin"
-                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Admin Dashboard
-              </Link>
+              {role === "property-agent" && ( // Conditionally render Admin Dashboard link
+                <Link
+                  to="/admin"
+                  className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
