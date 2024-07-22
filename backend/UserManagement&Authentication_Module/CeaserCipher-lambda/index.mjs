@@ -87,7 +87,7 @@ export const handler = async (event) => {
     }
 
     // Call Google Cloud Function
-    await axios.post(GOOGLE_CLOUD_FUNCTION_URL, {
+    const cloudFunctionResponse = await axios.post(GOOGLE_CLOUD_FUNCTION_URL, {
       username: dataItem.username,
       useremail: dataItem.useremail,
       role: dataItem.role,
@@ -95,6 +95,8 @@ export const handler = async (event) => {
       date: loginDate,
       time: loginTime
     });
+
+    console.log("Google Cloud Function response:", cloudFunctionResponse.data);
 
     const response = {
       statusCode: 200,
@@ -331,5 +333,6 @@ function buildResponse(statusCode, message) {
     body: JSON.stringify(message)
   };
 
+  console.log("Building response:", response);
   return response;
 }

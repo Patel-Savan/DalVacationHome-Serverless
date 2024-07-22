@@ -61,7 +61,7 @@ const RoomDetail: React.FC = () => {
       return;
     }
 
-    const userEmail = localStorage.getItem("user_email");
+    const userEmail = localStorage.getItem("useremail");
 
     if (!userEmail) {
       alert("User email not found in local storage.");
@@ -83,27 +83,55 @@ const RoomDetail: React.FC = () => {
 
       const bookingDetails = `Room ${id}, ${bookingResponse.data.days} nights`;
 
-      await axios.post(
-        `${config.apiGateway.BASE_URL}/booking-request`,
-        {
-          user_email: userEmail,
-          booking_details: bookingDetails,
-          booking_approved: true,
-        }
-      );
+      const bookingRequestPayload = {
+        user_email: userEmail,
+        booking_details: `Room ${id}, ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
+        booking_approved: true,
+      };
 
+      const response = await fetch(`${config.apiGateway.BASE_URL}/booking-request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingRequestPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+
+      const data = await response.json();
+      console.log('Booking request response:', data);
+      console.log('after success booking notification lambda')
       toast.success("Room Booked!!");
     } catch (error) {
       console.error("Error booking room:", error);
+      const bookingRequestPayload = {
+        user_email: userEmail,
+        booking_details: `Room ${id}, ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
+        booking_approved: false,
+      };
 
-      await axios.post(
-        `${config.apiGateway.BASE_URL}/booking-request`,
-        {
-          user_email: userEmail,
-          booking_details: `Room ${id}, ${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
-          booking_approved: false,
+      try {
+        console.log('sending failed booking notification');
+        const response = await fetch(`${config.apiGateway.BASE_URL}/booking-request`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bookingRequestPayload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
         }
-      );
+
+        const data = await response.json();
+        console.log('Booking request response (error case):', data);
+      } catch (error) {
+        console.error('Error sending booking request (error case):', error);
+      }
 
       toast.error("Failed to book a room");
     }
