@@ -40,6 +40,16 @@ gsutil mb -l $DEPLOYMENT_REGION gs://$PUBSUB_BUCKET_NAME/
 (cd ../../backend/message-passing/process-agent-message && rm $PROCESS_AGENT_MESSAGE_CODE_ZIP)
 
 
+# zipping code
+(cd ../../backend/message-passing/process-agent-status && zip $PROCESS_AGENT_STATUS_CODE_ZIP main.py requirements.txt)
+
+# uploading zipped code
+(cd ../../backend/message-passing/process-agent-status && gsutil cp $PROCESS_AGENT_STATUS_CODE_ZIP gs://$PUBSUB_BUCKET_NAME/)
+
+# removing zipped code from local
+(cd ../../backend/message-passing/process-agent-status && rm $PROCESS_AGENT_STATUS_CODE_ZIP)
+
+
 
 
 # ========== *** ANALYZE SENTIMENT FUNCTION SOURCE UPLOAD TO BUCKETS *** ==========
@@ -83,7 +93,7 @@ gcloud functions add-iam-policy-binding publish-to-customer-message-topic --regi
 
 gcloud functions add-iam-policy-binding process-agent-message --region=$DEPLOYMENT_REGION --member=allUsers --role=roles/cloudfunctions.invoker
 
-
+gcloud functions add-iam-policy-binding process-agent-status --region=$DEPLOYMENT_REGION --member=allUsers --role=roles/cloudfunctions.invoker
 
 
 
