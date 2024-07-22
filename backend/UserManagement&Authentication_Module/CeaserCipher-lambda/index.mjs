@@ -1,8 +1,10 @@
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
-
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
+import axios from "axios";
 
 const dynamoDb = DynamoDBDocument.from(new DynamoDB({ region: "us-east-1" }));
+
+const GOOGLE_CLOUD_FUNCTION_URL = "https://us-central1-csci-5409-428302.cloudfunctions.net/login-info"; // Replace with your actual URL
 
 /**
  * Entry Point for Ceaser-Cipher Check
@@ -38,7 +40,7 @@ export const handler = async (event) => {
     if (!dataItem || !dataItem.username) {
       dataItem = await getKeyFromDynamoDBUsingEmail(username);
 
-      if(!dataItem || !dataItem.username)
+      if (!dataItem || !dataItem.username)
         return buildResponse(403, "Account does not exist for this email");
     }
 
@@ -54,7 +56,7 @@ export const handler = async (event) => {
     // Getting token from Database that was provided by AWS Cognito during first step
     const data = await getToken(username);
 
-    // Deleting tokens from database for security reaspns
+    // Deleting tokens from database for security reasons
     if (data) {
       await deleteToken(username);
     }
@@ -79,28 +81,40 @@ export const handler = async (event) => {
     const loginInfo = await getLoginInfo(dataItem.username);
 
     if (loginInfo) {
-      await updateLoginInfo(dataItem.username, loginStats);         // Updating Login info If User has logged in before
+      await updateLoginInfo(dataItem.username, loginStats); // Updating Login info If User has logged in before
     } else {
-      await saveLoginInfo(userInfo, loginStats);                    // Saving new record to DynamoDB for User If login for  first time
+      await saveLoginInfo(userInfo, loginStats); // Saving new record to DynamoDB for User If login for the first time
     }
 
-    const Response = {
-      statusCode:200,
+    // Call Google Cloud Function
+    const cloudFunctionResponse = await axios.post(GOOGLE_CLOUD_FUNCTION_URL, {
+      username: dataItem.username,
+      useremail: dataItem.useremail,
+      role: dataItem.role,
+      action: "Login",
+      date: loginDate,
+      time: loginTime
+    });
+
+    console.log("Google Cloud Function response:", cloudFunctionResponse.data);
+
+    const response = {
+      statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-type": "application/json"
       },
-      body:JSON.stringify({
-        username:dataItem.username,
-        useremail : dataItem.useremail,
-        role:dataItem.role,
-        accessToken:data.accessToken,
-        idToken:data.idToken,
-        refreshToken:data.refreshToken
+      body: JSON.stringify({
+        username: dataItem.username,
+        useremail: dataItem.useremail,
+        role: dataItem.role,
+        accessToken: data.accessToken,
+        idToken: data.idToken,
+        refreshToken: data.refreshToken
       })
-    }
+    };
 
-    return Response;
+    return response;
   } catch (error) {
     console.error("Error:", error);
     return buildResponse(500, "Internal Server Error");
@@ -113,13 +127,13 @@ export const handler = async (event) => {
  */
 async function deleteToken(username) {
   const params = {
-    TableName : "auth-info",
-    Key : {
-      username : username
+    TableName: "auth-info",
+    Key: {
+      username: username
     }
-  }
+  };
 
-  await dynamoDb.delete(params)
+  await dynamoDb.delete(params);
 }
 
 /**
@@ -131,7 +145,7 @@ async function getToken(username) {
   const params = {
     TableName: "auth-info",
     Key: {
-      username : username
+      username: username
     }
   };
 
@@ -199,7 +213,7 @@ async function updateLoginInfo(username, loginStats) {
 }
 
 /**
- * function for saving login info when user logs in the first time
+ * Function for saving login info when user logs in the first time
  * @param {*} userInfo user information object
  * @param {*} loginStats login information object to be added
  * @returns true if information add was successful
@@ -232,7 +246,7 @@ async function saveLoginInfo(userInfo, loginStats) {
  */
 async function getKeyFromDynamoDB(username) {
   const params = {
-    TableName: "serverless-project-users", 
+    TableName: "serverless-project-users",
     Key: {
       username: username
     }
@@ -251,7 +265,7 @@ async function getKeyFromDynamoDB(username) {
 const getKeyFromDynamoDBUsingEmail = async (email) => {
   const params = {
     TableName: "serverless-project-users",
-    IndexName: "useremail", 
+    IndexName: "useremail",
     KeyConditionExpression: "useremail = :email",
     ExpressionAttributeValues: {
       ":email": email
@@ -319,5 +333,6 @@ function buildResponse(statusCode, message) {
     body: JSON.stringify(message)
   };
 
+  console.log("Building response:", response);
   return response;
 }
