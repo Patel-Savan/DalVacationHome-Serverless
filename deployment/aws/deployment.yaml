@@ -82,6 +82,73 @@ Resources:
           - BookingRequestQueue
           - Arn
 
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: "Serverless-Project-Userpool"
+      AliasAttributes:
+        - "email"
+      UsernameConfiguration:
+        CaseSensitive: false
+      AutoVerifiedAttributes:
+        - "email"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true 
+      MfaConfiguration: "OFF"
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: "verified_email"
+            Priority: 1
+      DeletionProtection: ACTIVE
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false  
+      EmailConfiguration:
+        EmailSendingAccount: "COGNITO_DEFAULT"  
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      LambdaConfig:
+        PostConfirmation: !GetAtt SaveUsersFunction.Arn  
+      Schema:
+        - Name: "email"
+          AttributeDataType: "String"
+          Mutable: false
+          Required: true
+        - Name: "Movie"
+          AttributeDataType: "String"
+          Mutable: true
+        - Name: "Friend"
+          AttributeDataType: "String"
+          Mutable: true
+        - Name: "Food"
+          AttributeDataType: "String"
+          Mutable: true
+        - Name: "Role"
+          AttributeDataType: "String"
+          Mutable: true
+        - Name: "Key"
+          AttributeDataType: "Number"
+          Mutable: true
+
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      ClientName: "Serverless-Project-Client"
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - "ALLOW_REFRESH_TOKEN_AUTH"
+        - "ALLOW_USER_SRP_AUTH"
+        - "ALLOW_USER_PASSWORD_AUTH"
+      RefreshTokenValidity: 30   
+      AccessTokenValidity: 2  
+      IdTokenValidity: 2 
+        
   BookingRequestPublisherFunction:
     Type: 'AWS::Lambda::Function'
     Properties: 
@@ -223,6 +290,64 @@ Resources:
           - Arn
       FunctionName:
         Ref: BookingApprovalFunction
+
+  #DynamoDB table
+  ProjectUsersTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "serverless-project-users"
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"
+        - AttributeName: "useremail"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: 'username'
+          KeyType: 'HASH'
+      GlobalSecondaryIndexes:
+        - IndexName: 'useremail'
+          KeySchema:
+            - AttributeName: 'useremail'
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: 'ALL'
+      BillingMode: 'PAY_PER_REQUEST'
+
+  LoginInfoTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "login-info"
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: 'username'
+          KeyType: 'HASH'
+      BillingMode: 'PAY_PER_REQUEST'
+  
+  AuthInfoTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "auth-info"
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: 'username'
+          KeyType: 'HASH'
+      BillingMode: 'PAY_PER_REQUEST'
+
+  ReviewsTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "reviews"
+      AttributeDefinitions:
+        - AttributeName: "roomNumber"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: 'roomNumber'
+          KeyType: 'HASH'
+      BillingMode: 'PAY_PER_REQUEST'
 
   # API Gateway
   ApiGatewayRestApi:
@@ -840,6 +965,14 @@ Resources:
         Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/stayDuration-info
 
 Outputs:
+  UserPoolId:
+    Description: 'Id for Cognito User Pool'
+    Value: 
+      Ref: CognitoUserPool
+  UserPoolClientId:
+    Description: "Id for Cognito User pool"
+    Value: 
+      Ref: CognitoUserPoolClient
   ApiGatewayEndpoint:
     Description: 'API Gateway endpoint URL'
     Value:
