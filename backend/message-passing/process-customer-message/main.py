@@ -12,8 +12,13 @@ def get_active_agent():
     
     if active_agents:
         for agent in active_agents:
-            return agent.id
+            return agent
     return None
+
+def mark_agent_busy(agent_id):
+    # Update the agent's status to busy
+    agent_ref = db.collection('agents_status').document(agent_id)
+    agent_ref.update({'status': 'busy'})
 
 def handle_chat_message(event, context):
     # Decode the Pub/Sub message
@@ -30,16 +35,25 @@ def handle_chat_message(event, context):
 
     if not session_doc.exists:
         # Get an active agent ID
-        agent_id = get_active_agent()
+        agent = get_active_agent()
 
-        # Create a new chat session
-        session_ref.set({
-            'sender_id': sender_id,
-            'agent_id': agent_id,
-            'status': 'active',
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'last_message': firestore.SERVER_TIMESTAMP
-        })
+        if agent:
+            agent_id = agent.id
+            # Mark the agent as busy
+            mark_agent_busy(agent_id)
+
+            # Create a new chat session
+            session_ref.set({
+                'sender_id': sender_id,
+                'agent_id': agent_id,
+                'status': 'active',
+                'created_at': firestore.SERVER_TIMESTAMP,
+                'last_message': firestore.SERVER_TIMESTAMP
+            })
+        else:
+            # Handle the case where no active agents are available
+            print('No active agents available. Retrying...')
+            raise Exception('No active agents available.')
     else:
         # Update the last message timestamp
         session_ref.update({'last_message': firestore.SERVER_TIMESTAMP})
