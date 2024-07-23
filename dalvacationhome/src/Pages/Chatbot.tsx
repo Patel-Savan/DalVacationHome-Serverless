@@ -86,15 +86,22 @@ const ChatbotUI: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
+  const awsAccessKeyId =
+    process.env.REACT_APP_AWS_ACCESS_KEY_ID ||
+    (() => {
+      throw new Error("REACT_APP_AWS_ACCESS_KEY_ID is not defined");
+    })();
+  const awsSecretAccessKey =
+    process.env.REACT_APP_AWS_SECRET_ACCESS_KEY ||
+    (() => {
+      throw new Error("REACT_APP_AWS_SECRET_ACCESS_KEY is not defined");
+    })();
+  console.log(awsAccessKeyId);
   AWS.config.update({
     region: "us-east-1",
-    credentials: new AWS.Credentials(
-      "AKIAUOM77AWAYOO56DUU",
-      "neV0ySnwh0yreD66NnwaLCDqWdS8CAdWExNpOuw0"
-    ),
+    credentials: new AWS.Credentials(awsAccessKeyId, awsSecretAccessKey),
   });
-
+  console.log(awsAccessKeyId);
   const lexruntime = new AWS.LexRuntimeV2();
   const userId = `chatbot-demo-${Date.now()}`;
 
