@@ -6,7 +6,7 @@ import Navbar from "../Components/Navbar";
 import { readLocalStorage } from "../utils/utils";
 
 interface Booking {
-  roomNumber: string;
+  roomId: string;
   roomType: string;
   entryDate: string;
   exitDate: string;
@@ -18,23 +18,32 @@ const Bookings = () => {
   const [error, setError] = useState<String | null>(null);
   const [username, setUsername] = useState<String | null>(null);
 
-  useEffect(() => {
-    const name = readLocalStorage("username");
-    setUsername(name);
-  }, []);
+  // useEffect(() => {
+  //   const name = readLocalStorage("username");
+  //   setUsername(name);
+  // }, []);
 
   const navigate = useNavigate();
   useEffect(() => {
+
+    const name = readLocalStorage("username");
+    setUsername(name);
     axios
       .post(
         "https://rxjjubs344.execute-api.us-east-1.amazonaws.com/dev/my-booked-rooms",
         {
-          username: username,
+          username: name,
         }
       )
       .then((response) => {
-        setMyBookings(response.data);
-        console.log(response.data);
+        // const mybookings = JSON.parse(response.data.body);
+        // console.log(response.data.body)
+        // console.log(mybookings)
+        // setMyBookings(myBookings);
+        console.log(JSON.parse(response.data.body).bookings);
+        const mybookings = JSON.parse(response.data.body).bookings;
+        setMyBookings(mybookings);
+
         setLoading(false);
       })
       .catch((error) => {
@@ -64,7 +73,7 @@ const Bookings = () => {
           myBookings.map((booking, index) => (
             <BookingCard
               key={index}
-              roomNumber={booking.roomNumber}
+              roomNumber={booking.roomId}
               roomType={booking.roomType}
               entryDate={booking.entryDate}
               exitDate={booking.exitDate}

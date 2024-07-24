@@ -8,7 +8,7 @@ const dynamoDb = DynamoDBDocument.from(
 );
 const tableName = "reviews";
 /**
- * This Function is the Entry point for Login Lambda Function
+ * This Function is the Entry point for Get feedback Function
  * @param {*} event Event body containing required details from frontend
  * @returns Response Body based on Processing of data
  */

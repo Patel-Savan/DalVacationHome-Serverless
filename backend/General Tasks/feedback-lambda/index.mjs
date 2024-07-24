@@ -8,6 +8,9 @@ const dynamoDb = DynamoDBDocument.from(
 );
 const tableName = "reviews";
 
+/**
+ * Entry Point for Lambda function
+ */
 export const handler = async (event) => {
   console.log(event);
   const body = JSON.parse(event.body);
@@ -47,12 +50,12 @@ export const handler = async (event) => {
       return Response;
     }
 
-    const reviewDataItem = await getReviewForRoom(roomNumber);
+    const reviewDataItem = await getReviewForRoom(roomNumber);     // Get all reviews from Database
 
     if (reviewDataItem) {
-      await updateReviewForRoom(roomNumber, reviewData);
+      await updateReviewForRoom(roomNumber, reviewData);            // Update Review Object for a Room by adding new review
     } else {
-      await addReviewForRoom(roomNumber, reviewData);
+      await addReviewForRoom(roomNumber, reviewData);               // Add new Review Object if this is first review
     }
 
     const Response = {
@@ -79,6 +82,11 @@ export const handler = async (event) => {
   }
 };
 
+/**
+ * Get Reviews from database
+ * @param {*} roomNumber room number for which review is to be obtained
+ * @returns review object with room number and arrays of all reviews if present
+ */
 async function getReviewForRoom(roomNumber){
   const params = {
     TableName: tableName,
@@ -98,6 +106,11 @@ async function getReviewForRoom(roomNumber){
 
 }
 
+/**
+ * Updates Review object by adding a new review to array of reviews
+ * @param {*} roomNumber Room number for which reviews is to be added
+ * @param {*} reviewData review to be added
+ */
 async function updateReviewForRoom(roomNumber, reviewData){
   const params = {
     TableName: tableName,
@@ -120,6 +133,12 @@ async function updateReviewForRoom(roomNumber, reviewData){
     }
   );
 }
+
+/**
+ * Add a new Review Object for Room
+ * @param {*} roomNumber Room number for which review is to be added
+ * @param {*} reviewData review object to be added
+ */
 async function addReviewForRoom(roomNumber, reviewData) {
   const item = {
     roomNumber: roomNumber,
