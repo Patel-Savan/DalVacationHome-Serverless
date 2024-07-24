@@ -3,6 +3,7 @@ import { styled, Tooltip, IconButton, Button, TextField } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import AWS from "aws-sdk";
+import { readLocalStorage, getRandomString } from '../utils/utils';
 
 const ChatButton = styled(Button)(({ theme }) => ({
   position: "fixed",
@@ -96,7 +97,7 @@ const ChatbotUI: React.FC = () => {
   });
 
   const lexruntime = new AWS.LexRuntimeV2();
-  const userId = `chatbot-demo-${Date.now()}`;
+  const userId: string = readLocalStorage("username") || getRandomString(10);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
