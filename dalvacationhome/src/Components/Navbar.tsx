@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState(""); // State variable for role
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("idToken");
@@ -21,7 +20,6 @@ const Navbar = () => {
     localStorage.clear();
     setIsAuthenticated(false);
     setRole(""); // Clear the role state
-    
   };
 
   return (
@@ -70,6 +68,12 @@ const Navbar = () => {
                     className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
                   >
                     Add Room
+                  </Link>
+                  <Link
+                    to="/agent-chat"
+                    className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Agent Chat
                   </Link>
                 </>
               )}

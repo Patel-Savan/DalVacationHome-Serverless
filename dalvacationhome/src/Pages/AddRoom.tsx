@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const AddRoomForm: React.FC = () => {
   const [roomNumber, setRoomNumber] = useState("");
@@ -38,9 +39,9 @@ const AddRoomForm: React.FC = () => {
       );
 
       if (response.status === 200) {
-        setMessage("Room created successfully!");
+        toast.success("Room created successfully!");
       } else {
-        setMessage("Failed to create room.");
+        toast.error("Failed to create room.");
       }
     } catch (error) {
       console.error("Error creating room:", error);

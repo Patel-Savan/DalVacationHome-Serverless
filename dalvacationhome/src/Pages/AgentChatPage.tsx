@@ -5,11 +5,12 @@ import Navbar from '../Components/Navbar';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
+import { readLocalStorage, getRandomString } from '../utils/utils';
 
 const AgentChatPage: React.FC = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const agentId = 'agent100';  // TODO: Replace with the actual agent ID
+  const agentId: string = readLocalStorage("username") || getRandomString(10);
 
   useEffect(() => {
     if (sessionId) return; // If sessionId is already set, no need to check again
