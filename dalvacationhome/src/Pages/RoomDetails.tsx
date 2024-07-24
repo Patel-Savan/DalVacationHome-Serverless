@@ -24,6 +24,7 @@ interface Review {
   review: string;
   username: string;
   useremail: string;
+  polarity?: string;
 }
 
 const RoomDetail: React.FC = () => {
@@ -45,6 +46,20 @@ const RoomDetail: React.FC = () => {
   const [updatedPrice, setUpdatedPrice] = useState<number>(0);
   const [updatedAvailable, setUpdatedAvailable] = useState<boolean>(false);
   const [updatedAmenities, setUpdatedAmenities] = useState<string>("");
+
+  const analyzeSentiment = async (review: string): Promise<string> => {
+    try {
+      const response = await axios.post(
+        "https://us-central1-dalvacationhome-dev.cloudfunctions.net/analyze-sentiment",
+        { feedback: review }
+      );
+      const { score } = response.data;
+      return score < 0 ? "Negative" : "Positive";
+    } catch (error) {
+      console.error("Error analyzing sentiment:", error);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -92,7 +107,13 @@ const RoomDetail: React.FC = () => {
 
         if (body.data) {
           console.log(body.data);
-          setReviews(body.data);
+          const reviewsWithPolarity = await Promise.all(
+            body.data.map(async (review: Review) => {
+              const polarity = await analyzeSentiment(review.review);
+              return { ...review, polarity };
+            })
+          );
+          setReviews(reviewsWithPolarity);
         }
       } catch (error) {
         console.error("Error fetching reviews:", error);
@@ -362,6 +383,10 @@ const RoomDetail: React.FC = () => {
                           {index + 1}.{item.username}
                         </h2>
                         <p>{item.review}</p>
+                        <p>
+                          <strong>Polarity: </strong>
+                          {item.polarity}
+                        </p>
                       </div>
                     ))}
                   </>
