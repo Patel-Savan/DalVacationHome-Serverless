@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom"; // Assuming you're using r
 const Navbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState(""); // State variable for role
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("idToken");
@@ -21,7 +20,6 @@ const Navbar = () => {
     localStorage.clear();
     setIsAuthenticated(false);
     setRole(""); // Clear the role state
-    
   };
 
   return (
