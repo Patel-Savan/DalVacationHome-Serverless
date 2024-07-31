@@ -6,7 +6,7 @@ const dynamoDb = DynamoDBDocument.from(new DynamoDB({
 }));
 const tableName = "serverless-project-users";
 /**
- * This Function is the Entry point for Login Lambda Function
+ * This Function is the Entry point for Security Check Function
  * @param {*} event Event body containing required details from frontend
  * @returns Response Body based on Processing of data
  */
