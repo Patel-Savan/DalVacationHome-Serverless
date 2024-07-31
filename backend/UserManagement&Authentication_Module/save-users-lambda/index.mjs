@@ -9,13 +9,13 @@ const cognito = new CognitoIdentityProvider({
 
 const dynamoDB = DynamoDBDocument.from(new DynamoDB({ region: 'us-east-1' }));
 const tableName = "serverless-project-users";
+const GOOGLE_CLOUD_FUNCTION_URL = "https://us-central1-csci-5409-428302.cloudfunctions.net/saveUserInfo";
 
 /**
  * This Function is the Entry point for Save Users Lambda Function
  * @param {*} event Event body containing Information Sent by AWS Cognito
  * @returns Response Body based on Processing of data
  */
-const GOOGLE_CLOUD_FUNCTION_URL = "https://us-central1-csci-5409-428302.cloudfunctions.net/saveUserInfo";
 
 export const handler = async (event) => {
     var name = event.userName;
