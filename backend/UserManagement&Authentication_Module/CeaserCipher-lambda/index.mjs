@@ -6,6 +6,11 @@ const dynamoDb = DynamoDBDocument.from(new DynamoDB({ region: "us-east-1" }));
 
 const GOOGLE_CLOUD_FUNCTION_URL = "https://us-central1-csci-5409-428302.cloudfunctions.net/login-info"; // Replace with your actual URL
 
+/**
+ * This Function is the Entry point for Ceaser Cipher Lambda Function
+ * @param {*} event Event body containing required details from frontend
+ * @returns Response Body based on Processing of data
+ */
 export const handler = async (event) => {
   const body = JSON.parse(event.body);
 
@@ -27,26 +32,26 @@ export const handler = async (event) => {
   }
 
   try {
-    var dataItem = await getKeyFromDynamoDB(username);
+    var dataItem = await getKeyFromDynamoDB(username);        // Getting Cipher Key from DynamoDB with Username
     console.log(dataItem);
 
     if (!dataItem || !dataItem.username) {
-      dataItem = await getKeyFromDynamoDBUsingEmail(username);
+      dataItem = await getKeyFromDynamoDBUsingEmail(username);    // Getting Cipher Key from DynamoDB with Useremail If  not found with Username
 
       if (!dataItem || !dataItem.username)
         return buildResponse(403, "Account does not exist for this email");
     }
 
     const key = dataItem.key;
-    const isValid = verifyCipherText(normalText, cipherText, key);
+    const isValid = verifyCipherText(normalText, cipherText, key);      // Getting Correct CipherText for given normal Text and provided key
 
     console.log(isValid);
     if (!isValid) {
       return buildResponse(401, "Incorrect Encryption");
     }
 
-    const data = await getToken(username);
-    console.log("Token data:", data); // Add this line
+    const data = await getToken(username);                // Getting Token provided by Cognito that was stored in DynamoDB during first step
+    console.log("Token data:", data); 
 
     if (!data) {
       return buildResponse(401, "No tokens found for user");
@@ -72,12 +77,12 @@ export const handler = async (event) => {
       time: loginTime
     };
 
-    const loginInfo = await getLoginInfo(dataItem.username);
+    const loginInfo = await getLoginInfo(dataItem.username);      // Getting Previous Login Info of User
 
     if (loginInfo) {
-      await updateLoginInfo(dataItem.username, loginStats);
+      await updateLoginInfo(dataItem.username, loginStats);       // Updating Login Info of User by adding new Login Info to Previous information
     } else {
-      await saveLoginInfo(userInfo, loginStats);
+      await saveLoginInfo(userInfo, loginStats);                  // Creating new record for storing User Login Info If does not exist
     }
 
     const cloudFunctionResponse = await axios.post(GOOGLE_CLOUD_FUNCTION_URL, {
@@ -114,6 +119,11 @@ export const handler = async (event) => {
   }
 };
 
+
+/**
+ * Function for deleting token from DynamoDB Once It is sent to frontEnd
+ * @param {*} username username for which token is to be deleted
+ */
 async function deleteToken(username) {
   const params = {
     TableName: "auth-info",
@@ -123,10 +133,15 @@ async function deleteToken(username) {
   };
 
   if (username) {
-    await dynamoDb.delete(params);
+    await dynamoDb.delete(params);    // Deleting token from DynamoDB
   }
 }
 
+/**
+ * Getting token from DynamoDB that was stored during first step
+ * @param {*} username username for which token is to be fetched
+ * @returns token if exist
+ */
 async function getToken(username) {
   const params = {
     TableName: "auth-info",
@@ -141,6 +156,11 @@ async function getToken(username) {
   return response.Item;
 }
 
+/**
+ * Function for Getting Previous Login Info for User
+ * @param {*} username username for which Login Info is to fetched
+ * @returns Login Info Record
+ */
 async function getLoginInfo(username) {
   const params = {
     TableName: "login-info",
