@@ -1,0 +1,21 @@
+{
+  "name": "ceasercipher-lambda",
+  "version": "1.0.0",
+  "description": "Lambda for Checking Ceaser Cipher",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Lambda",
+    "CeaserCipher-Check"
+  ],
+  "author": "Savan Patel",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.616.0",
+    "@aws-sdk/lib-dynamodb": "^3.616.0",
+    "aws-sdk": "^2.1643.0",
+    "axios": "^1.7.2"
+  }
+}

@@ -1,0 +1,65 @@
+imports:
+  - path: pubsub.py
+
+resources:
+  - name: customer-messages-topic
+    type: pubsub.py
+    properties:
+      topic: customer-messages
+
+  - name: analyze-sentiment
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: analyze-sentiment
+      entryPoint: analyze_sentiment
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-analyze-sentiment-code-bucket/analyze_sentiment_function_source.zip #TODO: Change it to dynamic naming from .env file
+      httpsTrigger: {}
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
+
+  - name: publish-to-customer-message-topic
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: publish-to-customer-message-topic
+      entryPoint: publish_message
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-pubsub-code-bucket/publish_to_customer_message_topic_function_source.zip #TODO: Change it to dynamic naming from .env file
+      httpsTrigger: {}
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
+
+  - name: process-agent-message
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: process-agent-message
+      entryPoint: handle_chat_message
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-pubsub-code-bucket/process_agent_message_function_source.zip #TODO: Change it to dynamic naming from .env file
+      httpsTrigger: {}
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
+
+  - name: process-agent-status
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: process-agent-status
+      entryPoint: agent_status
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-pubsub-code-bucket/process_agent_status_function_source.zip #TODO: Change it to dynamic naming from .env file
+      httpsTrigger: {}
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
+
+  - name: process-customer-message
+    type: gcp-types/cloudfunctions-v1:projects.locations.functions
+    properties:
+      parent: projects/dalvacationhome-dev/locations/us-central1 #TODO: Change it to dynamic naming from .env file
+      function: process-customer-message
+      entryPoint: handle_chat_message
+      runtime: python310
+      sourceArchiveUrl: gs://dalvacationhome-pubsub-code-bucket/process_customer_message_function_source.zip #TODO: Change it to dynamic naming from .env file
+      eventTrigger:
+        eventType: google.pubsub.topic.publish
+        resource: projects/dalvacationhome-dev/topics/customer-messages
+      location: us-central1 #TODO: Change it to dynamic naming from .env file
